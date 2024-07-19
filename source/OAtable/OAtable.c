@@ -149,3 +149,20 @@ ssize_t OAtable_size(const OAtable_t table) {
     return table->actual_size;
 }
 
+/* ================================================================ */
+
+void OAtable_destroy(OAtable_t table) {
+    
+    if (table == NULL) {
+        return ;
+    }
+
+    for (size_t i = 0; i < table->logical_size; i++) {
+        free(table->cells[i]);
+    }
+
+    free(table->cells);
+    free(table);
+}
+
+/* ================================================================ */

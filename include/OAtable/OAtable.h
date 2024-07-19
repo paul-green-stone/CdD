@@ -27,4 +27,6 @@ extern void OAtable_print(const OAtable_t table);
 
 /* ================================================================ */
 
+extern void OAtable_destroy(OAtable_t table);
+
 #endif /* OPEN_ADDRESSED_TABLE_H */
