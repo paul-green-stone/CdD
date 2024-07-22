@@ -1,4 +1,4 @@
-#include "include/hash/hash.h"
+#include "./dictionary.h"
 
 void print_int(void* data) {
     printf("%d", *((int*) data));
@@ -6,7 +6,7 @@ void print_int(void* data) {
 
 int main(int argc, char** argv) {
     
-    OAtable_t table = OAtable_new(7, hash_pjw, probe_hash, print_int);
+    Dict_t dictionary = Dict_new(7, print_int, NULL);
     
     int v1 = 100;
     int v2 = 200;
@@ -16,18 +16,30 @@ int main(int argc, char** argv) {
     int v6 = 6000;
     int v7 = -19;
 
-    OAtable_add(table, "Homer", &v1);
-    OAtable_add(table, "Marge", &v2);
-    OAtable_add(table, "Lisa", &v3);
-    OAtable_add(table, "Bart", &v4);
-    OAtable_add(table, "Moe", &v5);
-    OAtable_add(table, "Nelson", &v6);
-    OAtable_add(table, "Me?", &v7);
-    OAtable_add(table, "WHo's that boy?", &v7);
+    Dict_add(dictionary, "Homer", &v1);
+    Dict_add(dictionary, "Marge", &v2);
+    Dict_add(dictionary, "Lisa", &v3);
+    Dict_add(dictionary, "Bart", &v4);
+    Dict_add(dictionary, "Moe", &v5);
+    Dict_add(dictionary, "Nelson", &v6);
+    Dict_add(dictionary, "Me?", &v7);
+    Dict_add(dictionary, "WHo's that boy?", &v7);
     
-    printf("size = %zd\n", OAtable_size(table));
+    printf("size = %zd\n", Dict_size(dictionary));
+    printf("load factor = %.2f\n", Dict_loadF(dictionary));
     
-    OAtable_print(table);
+    Dict_print(dictionary);
+    
+    int* n =  Dict_get(dictionary, "Moe");
+    
+    if (n) printf("\nMoe's favorite number is %d\n", *n);
+    
+    printf("After deleting the Moe's favorite number:\n");
+    
+    Dict_remove(dictionary, "Moe");
+    Dict_print(dictionary);
+    
+    printf("\nNew size is %zd\n", Dict_size(dictionary));
 
-    OAtable_destroy(table);
+    Dict_destroy(dictionary);
 }

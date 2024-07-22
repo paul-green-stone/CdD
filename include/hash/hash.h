@@ -1,7 +1,7 @@
 #ifndef HASH_H
 #define HASH_H
 
-#include "../../oatable.h"
+#include "../../dictionary.h"
 
 /* ================================================================ */
 

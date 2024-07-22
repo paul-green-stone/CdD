@@ -8,7 +8,7 @@
 #include <string.h>
 
 #include "include/hash/hash.h"
-#include "include/OAtable/OAtable.h"
+#include "include/Dictionary/Dict.h"
 
 /* ================================================================ */
 
