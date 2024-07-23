@@ -1,6 +1,6 @@
 #include "../../dictionary.h"
 
-#define IS_EMPTY(table, cell) ((strlen((table)->mappings[(cell)]->key) == 0) && ((table)->mappings[(cell)]->value == NULL))
+#define IS_EMPTY(dict, cell) ((strlen((dict)->mappings[(cell)]->key) == 0) && ((dict)->mappings[(cell)]->value == NULL))
 
 #define MAX_TAG_LEN 32
 
@@ -20,6 +20,8 @@ static struct dictionary {
     
     void (*print)(void* data);
     void (*destroy)(void* data);
+    void (*_write)(void* data, FILE* file);
+    void (*_read)(void* data, FILE* file);
     
     struct mapping** mappings;
 };
@@ -28,34 +30,34 @@ typedef struct dictionary* Dict_t;
 
 /* ================================================================ */
 
-Dict_t Dict_new(size_t size, void (*print)(void* data), void (*destroy)(void* data)) {
+Dict_t Dict_new(size_t size, void (*print)(void* data), void (*destroy)(void* data), void (*_write)(void* data, FILE* file), void (*_read)(void* data, FILE* file)) {
     
-    Dict_t table = NULL;
+    Dict_t dict = NULL;
     
     /* ================ */
     
-    if ((table = calloc(1, sizeof(struct dictionary))) == NULL) {
+    if ((dict = calloc(1, sizeof(struct dictionary))) == NULL) {
         return NULL;
     }
     
-    if ((table->mappings = calloc(size, sizeof(struct mapping*))) == NULL) {
-        free(table);
+    if ((dict->mappings = calloc(size, sizeof(struct mapping*))) == NULL) {
+        free(dict);
         
         /* ======== */
         return NULL;
     }
     
     for (size_t i = 0; i < size; i++) {
-        table->mappings[i] = calloc(1, sizeof(struct mapping));
+        dict->mappings[i] = calloc(1, sizeof(struct mapping));
         
-        if (table->mappings[i] == NULL) {
+        if (dict->mappings[i] == NULL) {
             
             for (size_t j = 0; j < i; j++) {
-                free(table->mappings[j]);
+                free(dict->mappings[j]);
             }
             
-            free(table->mappings);
-            free(table);
+            free(dict->mappings);
+            free(dict);
             
             /* ======== */
             
@@ -63,30 +65,32 @@ Dict_t Dict_new(size_t size, void (*print)(void* data), void (*destroy)(void* da
         }
     }
     
-    table->logical_size = size;
+    dict->logical_size = size;
     
-    table->print = print;
-    table->destroy = destroy;
+    dict->print = print;
+    dict->destroy = destroy;
+    dict->_write = _write;
+    dict->_read = _read;
     
     /* ======== */
     
-    return table;
+    return dict;
 }
 
 /* ================================================================ */
 
-void Dict_print(const Dict_t table) {
+void Dict_print(const Dict_t dict) {
     
-    if (table == NULL) {
+    if (dict == NULL) {
         return ;
     }
     
-    for (size_t i = 0; i < table->logical_size; i++) {
+    for (size_t i = 0; i < dict->logical_size; i++) {
         printf("%zu. ", i);
         
-        if (table->mappings[i]->value != NULL) {
-            printf("%s -> ", table->mappings[i]->key);
-            table->print(table->mappings[i]->value);
+        if (dict->mappings[i]->value != NULL) {
+            printf("%s -> ", dict->mappings[i]->key);
+            dict->print(dict->mappings[i]->value);
         }
         
         printf("\n");
@@ -95,34 +99,34 @@ void Dict_print(const Dict_t table) {
 
 /* ================================================================ */
 
-ssize_t Dict_add(Dict_t table, const char* key, void* value) {
+ssize_t Dict_insert(const char* key, void* value, Dict_t dict) {
     
     size_t index = 0;
     
     /* ================ */
     
-    if (table == NULL) {
+    if (dict == NULL) {
         return -1;
     }
     
-    if (table->actual_size == table->logical_size) {
+    if (dict->actual_size == dict->logical_size) {
         return -1;
     }
     
-    for (size_t i = 0; i < table->logical_size; i++) {
-        index = (hash_pjw(key, table->logical_size) + i * probe_hash(key, table->logical_size)) % table->logical_size;
+    for (size_t i = 0; i < dict->logical_size; i++) {
+        index = (hash_pjw(key, dict->logical_size) + i * probe_hash(key, dict->logical_size)) % dict->logical_size;
         
-        if (IS_EMPTY(table, index)) {
+        if (IS_EMPTY(dict, index)) {
             
-            strncpy(table->mappings[index]->key, key, MAX_TAG_LEN - 1);
-            table->mappings[index]->value = value;
+            strncpy(dict->mappings[index]->key, key, MAX_TAG_LEN - 1);
+            dict->mappings[index]->value = value;
             
-            table->actual_size++;
+            dict->actual_size++;
             
             /* ======== */
             break ;
         }
-        else if (strcmp(table->mappings[index]->key, key) == 0) {
+        else if (strcmp(dict->mappings[index]->key, key) == 0) {
             return -1;
         }
     }
@@ -134,66 +138,84 @@ ssize_t Dict_add(Dict_t table, const char* key, void* value) {
 
 /* ================================================================ */
 
-ssize_t Dict_size(const Dict_t table) {
+ssize_t Dict_size(const Dict_t dict) {
     
-    if (table == NULL) {
+    if (dict == NULL) {
         return -1;
     }
     
     /* ======== */
     
-    return table->actual_size;
+    return dict->actual_size;
 }
 
 /* ================================================================ */
 
-void Dict_destroy(Dict_t table) {
+ssize_t Dict_capacity(const Dict_t dict) {
+
+    if (dict == NULL) {
+        return -1;
+    }
     
-    if (table == NULL) {
+    /* ======== */
+    
+    return dict->logical_size;
+}
+
+/* ================================================================ */
+
+void Dict_destroy(Dict_t dict) {
+    
+    if (dict == NULL) {
         return ;
     }
 
-    for (size_t i = 0; i < table->logical_size; i++) {
-        free(table->mappings[i]);
+    for (size_t i = 0; i < dict->logical_size; i++) {
+
+        if (dict->destroy) {
+            dict->destroy(dict->mappings[i]->value);
+        }
+
+        free(dict->mappings[i]);
     }
 
-    free(table->mappings);
-    free(table);
+    free(dict->mappings);
+    free(dict);
 }
 
 /* ================================================================ */
 
-float Dict_loadF(const Dict_t table) {
+float Dict_loadF(const Dict_t dict) {
     
-    if (table == NULL || table->logical_size == 0) {
+    if (dict == NULL || dict->logical_size == 0) {
         return -1.f;
     }
     
     /* ======== */
     
-    return ((float) table->actual_size / table->logical_size);
+    return ((float) dict->actual_size / dict->logical_size);
 }
 
 /* ================================================================ */
 
-void* Dict_get(Dict_t table, const char* key) {
+void* Dict_lookup(const char* key, Dict_t dict) {
     
     size_t index = 0;
     
     /* ================ */
     
-    if (table == NULL) {
+    if (dict == NULL) {
         return NULL;
     }
     
-    for (size_t i = 0; i < table->logical_size; i++) {
-        index = (hash_pjw(key, table->logical_size) + i * probe_hash(key, table->logical_size)) % table->logical_size;
+    for (size_t i = 0; i < dict->logical_size; i++) {
+        index = (hash_pjw(key, dict->logical_size) + i * probe_hash(key, dict->logical_size)) % dict->logical_size;
         
-        if (IS_EMPTY(table, index)) {
+        if (IS_EMPTY(dict, index)) {
             return NULL;
         }
-        else if (!IS_EMPTY(table, index) && strcmp(key, table->mappings[index]->key) == 0) {
-            return table->mappings[index]->value;
+        else if (!IS_EMPTY(dict, index) && strcmp(key, dict->mappings[index]->key) == 0) {
+            return dict->mappings[index]->value;
         }
     }
     
@@ -204,37 +226,129 @@ void* Dict_get(Dict_t table, const char* key) {
 
 /* ================================================================ */
 
-void* Dict_remove(Dict_t table, const char* key) {
+void* Dict_remove(const char* key, Dict_t dict) {
     
     size_t index = 0;
     void* value = NULL;
     
     /* ================ */
     
-    if (table == NULL || key == NULL) {
+    if (dict == NULL || key == NULL) {
         return NULL;
     }
     
-    for (size_t i = 0; i < table->logical_size; i++) {
-        index = (hash_pjw(key, table->logical_size) + i * probe_hash(key, table->logical_size)) % table->logical_size;
-        
-        if (IS_EMPTY(table, index)) {
+    for (size_t i = 0; i < dict->logical_size; i++) {
+        index = (hash_pjw(key, dict->logical_size) + i * probe_hash(key, dict->logical_size)) % dict->logical_size;
+
+        if (IS_EMPTY(dict, index)) {
             return NULL;
         }
-        else if (!IS_EMPTY(table, index) && strcmp(key, table->mappings[index]->key) == 0) {
+        else if (!IS_EMPTY(dict, index) && strcmp(key, dict->mappings[index]->key) == 0) {
             
-            memset(table->mappings[index]->key, '\0', MAX_TAG_LEN);
+            memset(dict->mappings[index]->key, '\0', MAX_TAG_LEN);
             
-            value = table->mappings[index]->value;
-            table->mappings[index]->value = NULL;
+            value = dict->mappings[index]->value;
+            dict->mappings[index]->value = NULL;
             
-            table->actual_size--;
+            dict->actual_size--;
         }
     }
-                                  
+
     /* ======== */
-    
+
     return value;
+}
+
+/* ================================================================ */
+
+int Dict_saveb(const Dict_t dict, const char* filename) {
+
+    FILE* file;
+
+    /* ================ */
+
+    if (dict == NULL) {
+        return -1;
+    }
+
+    if ((file = fopen(filename, "wb")) == NULL) {
+        fprintf(stderr, "Failed to open file for writing: %s\n", strerror(errno));
+
+        /* ======== */
+        return -1;
+    }
+
+    fwrite(&dict->logical_size, sizeof(dict->logical_size), 1, file);
+
+    for (size_t i = 0; i < dict->logical_size; i++) {
+        if (!IS_EMPTY(dict, i)) {
+            fwrite(dict->mappings[i]->key, sizeof(char), MAX_TAG_LEN, file);
+            
+            if (dict->_write) {
+                dict->_write(dict->mappings[i]->value, file);
+            }
+        }
+    }
+
+    fclose(file);
+
+    /* ======== */
+
+    return 0;
+}
+
+/* ================================================================ */
+
+Dict_t Dict_loadb(const char* filename, void (*print)(void* value), void (*destroy)(void* value), void (*_write)(void* data, FILE* file), void (*_read)(void* data, FILE* file)) {
+
+    Dict_t dict = NULL;
+    size_t size;
+
+    FILE* file = NULL;
+
+    void* value;
+
+    /* ================ */
+
+    if ((file = fopen(filename, "rb")) == NULL) {
+        fprintf(stderr, "Failed to open file for reading: %s\n", strerror(errno));
+
+        /* ======== */
+        return NULL;
+    }
+
+    fread(&size, sizeof(size), 1, file);
+
+    if ((dict = Dict_new(size, print, destroy, _write, _read)) == NULL) {
+        fclose(file);
+
+        /* ======== */
+        return NULL;
+    }
+
+    while (!feof(file)) {
+        char key[MAX_TAG_LEN];
+
+        if ((value = malloc(sizeof(int))) == NULL) {
+            Dict_destroy(dict);
+
+            /* ======== */
+            return NULL;
+        }
+
+        fread(key, sizeof(char), MAX_TAG_LEN, file);
+        dict->_read(value, file);
+
+        Dict_insert(key, value, dict);
+    }
+
+    free(value);
+
+    fclose(file);
+
+    /* ======== */
+
+    return dict;
 }
 
 /* ================================================================ */
