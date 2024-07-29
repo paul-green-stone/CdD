@@ -2,7 +2,7 @@
 
 #define IS_EMPTY(dict, cell) ((strlen((dict)->mappings[(cell)]->key) == 0) && ((dict)->mappings[(cell)]->value == NULL))
 
-#define MAX_TAG_LEN 32
+#define MAX_TAG_LEN 64
 
 /* ================================================================ */
 
@@ -261,7 +261,7 @@ void* Dict_remove(const char* key, Dict_t dict) {
 
 /* ================================================================ */
 
-int Dict_saveb(const Dict_t dict, const char* filename) {
+int Dict_save(const Dict_t dict, const char* filename) {
 
     FILE* file;
 
@@ -299,7 +299,7 @@ int Dict_saveb(const Dict_t dict, const char* filename) {
 
 /* ================================================================ */
 
-Dict_t Dict_loadb(const char* filename, void (*print)(void* value), void (*destroy)(void* value), void (*_write)(void* data, FILE* file), void (*_read)(void* data, FILE* file)) {
+Dict_t Dict_load(const char* filename, void (*print)(void* value), void (*destroy)(void* value), void (*_write)(void* data, FILE* file), void (*_read)(void* data, FILE* file), size_t nbytes) {
 
     Dict_t dict = NULL;
     size_t size;
@@ -328,8 +328,9 @@ Dict_t Dict_loadb(const char* filename, void (*print)(void* value), void (*destr
 
     while (!feof(file)) {
         char key[MAX_TAG_LEN];
-
-        if ((value = malloc(sizeof(int))) == NULL) {
+        
+        /* Specify the number of bytes to allocate */
+        if ((value = malloc(nbytes)) == NULL) {
             Dict_destroy(dict);
 
             /* ======== */

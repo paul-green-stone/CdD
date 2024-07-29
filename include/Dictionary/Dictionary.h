@@ -43,11 +43,11 @@ extern void* Dict_remove(const char* key, Dict_t dict);
 
 /* ================================================================ */
 
-extern int Dict_saveb(const Dict_t dict, const char* filename);
+extern int Dict_save(const Dict_t dict, const char* filename);
 
 /* ================================================================ */
 
-extern Dict_t Dict_loadb(const char* filename, void (*print)(void* value), void (*destroy)(void* value), void (*_write)(void* data, FILE* file), void (*_read)(void* data, FILE* file));
+extern Dict_t Dict_load(const char* filename, void (*print)(void* value), void (*destroy)(void* value), void (*_write)(void* data, FILE* file), void (*_read)(void* data, FILE* file), size_t nbytes);
 
 /* ================================================================ */
 

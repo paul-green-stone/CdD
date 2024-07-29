@@ -10,7 +10,7 @@
 #include <errno.h>
 
 #include "include/hash/hash.h"
-#include "include/Dictionary/Dict.h"
+#include "include/Dictionary/Dictionary.h"
 
 /* ================================================================ */
 
