@@ -42,6 +42,6 @@ It's designed to work seamlessly on *\*nix* operating systems, including Linux a
 
 - 1️⃣ **Framework for Custom Data Handling**: *CdD* provides a skeleton framework that requires users to define their own functions for handling the data stored in the dictionary. This allows for maximum flexibility and customization, enabling users to tailor the dictionary’s behavior to their specific application needs
 
-- 2️⃣ **Fast Performance**: Utilizing a hash table under the hood, CDict provides constant-time complexity for lookups, insertions, and deletions, making it an ideal choice for applications that demand quick data retrieval
+- 2️⃣ **Fast Performance**: Utilizing a hash table under the hood, *CdD* provides constant-time complexity for lookups, insertions, and deletions, making it an ideal choice for applications that demand quick data retrieval
 
 - 3️⃣ **Memory Management**: While *CdD* efficiently manages its internal memory allocation and deallocation, users are responsible for implementing their own memory allocation and deallocation functions for the data types they store. Properly managing memory in these functions is crucial to prevent memory leaks
