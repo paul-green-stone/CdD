@@ -20,8 +20,8 @@ static struct dictionary {
     
     void (*print)(void* data);
     void (*destroy)(void* data);
-    void (*_write)(void* data, FILE* file);
-    void (*_read)(void* data, FILE* file);
+    int (*save_data)(void* data, FILE* file);
+    int (*load_data)(void** data, FILE* file);
     
     struct mapping** mappings;
 };
@@ -30,7 +30,7 @@ typedef struct dictionary* Dict_t;
 
 /* ================================================================ */
 
-Dict_t Dict_new(size_t size, void (*print)(void* data), void (*destroy)(void* data), void (*_write)(void* data, FILE* file), void (*_read)(void* data, FILE* file)) {
+Dict_t Dict_new(size_t size, void (*print)(void* data), void (*destroy)(void* data), int (*save_data)(void* data, FILE* file), int (*load_data)(void** data, FILE* file)) {
     
     Dict_t dict = NULL;
     
@@ -69,8 +69,8 @@ Dict_t Dict_new(size_t size, void (*print)(void* data), void (*destroy)(void* da
     
     dict->print = print;
     dict->destroy = destroy;
-    dict->_write = _write;
-    dict->_read = _read;
+    dict->save_data = save_data;
+    dict->load_data = load_data;
     
     /* ======== */
     
@@ -88,7 +88,8 @@ void Dict_print(const Dict_t dict) {
     for (size_t i = 0; i < dict->logical_size; i++) {
         printf("%zu. ", i);
         
-        if (dict->mappings[i]->value != NULL) {
+        if (!IS_EMPTY(dict, i)) {
+            // dict->mappings[i]->value != NULL
             printf("%s -> ", dict->mappings[i]->key);
             dict->print(dict->mappings[i]->value);
         }
@@ -241,7 +242,7 @@ void* Dict_remove(const char* key, Dict_t dict) {
         index = (hash_pjw(key, dict->logical_size) + i * probe_hash(key, dict->logical_size)) % dict->logical_size;
 
         if (IS_EMPTY(dict, index)) {
-            return NULL;
+            break ;
         }
         else if (!IS_EMPTY(dict, index) && strcmp(key, dict->mappings[index]->key) == 0) {
             
@@ -265,6 +266,8 @@ int Dict_save(const Dict_t dict, const char* filename) {
 
     FILE* file;
 
+    size_t bytes_written = 0;
+
     /* ================ */
 
     if (dict == NULL) {
@@ -278,14 +281,31 @@ int Dict_save(const Dict_t dict, const char* filename) {
         return -1;
     }
 
-    fwrite(&dict->logical_size, sizeof(dict->logical_size), 1, file);
+    if (fwrite(&dict->logical_size, sizeof(dict->logical_size), 1, file) != 1) {
+        fprintf(stderr, "Error has occured: written unexpected number of bytes for the dictionary size\n");
+
+        /* ======== */
+        return -1;
+    }
 
     for (size_t i = 0; i < dict->logical_size; i++) {
         if (!IS_EMPTY(dict, i)) {
-            fwrite(dict->mappings[i]->key, sizeof(char), MAX_TAG_LEN, file);
-            
-            if (dict->_write) {
-                dict->_write(dict->mappings[i]->value, file);
+
+            size_t key_len = strlen(dict->mappings[i]->key);
+
+            if ((bytes_written = fwrite(&key_len, sizeof(size_t), 1, file)) != 1) {
+                fprintf(stderr, "Error has occured: written unexpected number of bytes for the dictionary key size\n");
+            }
+
+            if ((bytes_written = fwrite(dict->mappings[i]->key, sizeof(char), key_len, file)) != key_len) {
+                fprintf(stderr, "Error has occured: written unexpected number of bytes for the dictionary key (key = %s)\n", dict->mappings[i]->key);
+
+                /* ======== */
+                return -1;
+            }
+                       
+            if (dict->save_data) {
+                dict->save_data(dict->mappings[i]->value, file);
             }
         }
     }
@@ -299,14 +319,15 @@ int Dict_save(const Dict_t dict, const char* filename) {
 
 /* ================================================================ */
 
-Dict_t Dict_load(const char* filename, void (*print)(void* value), void (*destroy)(void* value), void (*_write)(void* data, FILE* file), void (*_read)(void* data, FILE* file), size_t nbytes) {
+Dict_t Dict_load(const char* filename, void (*print)(void* value), void (*destroy)(void* value), int (*save_data)(void* data, FILE* file), int (*load_data)(void** data, FILE* file)) {
 
     Dict_t dict = NULL;
     size_t size;
+    size_t bytes_read = 0;
 
     FILE* file = NULL;
 
-    void* value;
+    void* value = NULL;
 
     /* ================ */
 
@@ -317,33 +338,59 @@ Dict_t Dict_load(const char* filename, void (*print)(void* value), void (*destro
         return NULL;
     }
 
-    fread(&size, sizeof(size), 1, file);
+    if ((bytes_read = fread(&size, sizeof(size), 1, file)) != 1) {
+        fprintf(stderr, "Error has occured: unable to read the dictionary size (%zd)\n", bytes_read);
 
-    if ((dict = Dict_new(size, print, destroy, _write, _read)) == NULL) {
+        /* ======== */
+        return NULL;
+    }
+
+    if ((dict = Dict_new(size, print, destroy, save_data, load_data)) == NULL) {
         fclose(file);
 
         /* ======== */
         return NULL;
     }
 
-    while (!feof(file)) {
-        char key[MAX_TAG_LEN];
-        
-        /* Specify the number of bytes to allocate */
-        if ((value = malloc(nbytes)) == NULL) {
-            Dict_destroy(dict);
+    while (1) {
+        char* key = NULL;
+
+        size_t key_len = 0;
+
+        if ((bytes_read = fread(&key_len, sizeof(size_t), 1, file)) != 1) {
+
+            if (feof(file)) {
+                break ;
+            }
+
+            fprintf(stderr, "Error has occured: unable to read the key size (%zd)\n", bytes_read);
 
             /* ======== */
             return NULL;
         }
 
-        fread(key, sizeof(char), MAX_TAG_LEN, file);
-        dict->_read(value, file);
+        if ((key = malloc(sizeof(char) * key_len + 1)) == NULL) {
+            fprintf(stderr, "Error has occured: %s\n", strerror(errno));
+
+            /* ======== */
+            return dict;
+        }
+
+        if ((bytes_read = fread(key, sizeof(char), key_len, file)) != key_len) {
+            fprintf(stderr, "Error has occured: unable to read the key value\n");
+
+            /* ======== */
+            return NULL;
+        }
+
+        key[bytes_read] = '\0';
+
+        dict->load_data(&value, file);
 
         Dict_insert(key, value, dict);
+        
+        free(key);
     }
-
-    free(value);
 
     fclose(file);
 

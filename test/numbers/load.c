@@ -7,15 +7,15 @@
 void how_to_print_INT(void* data);
 
 /* Not implemented in this scenario */
-void how_to_write_INT(void* data, FILE* file);
+int how_to_write_INT(void* data, FILE* file);
 
-void how_to_read_INT(void* data, FILE* file);
+int how_to_read_INT(void** data, FILE* file);
 
 /* ================================================================ */
 
 int main(int argc, char** argv) {
     
-    Dict_t d = Dict_load(FILENAME, how_to_print_INT, free, NULL, how_to_read_INT, sizeof(int));
+    Dict_t d = Dict_load(FILENAME, how_to_print_INT, free, NULL, how_to_read_INT);
     
     /* ================ */
     
@@ -38,8 +38,13 @@ int main(int argc, char** argv) {
 
 /* ================================================================ */
 
-void how_to_read_INT(void* data, FILE* file) {
-    fread(data, sizeof(int), 1, file);
+int how_to_read_INT(void** data, FILE* file) {
+
+    *data = malloc(sizeof(int));
+
+    fread(*data, sizeof(int), 1, file);
+
+    return 0;
 }
 
 /* ================================================================ */

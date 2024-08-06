@@ -1,13 +1,13 @@
-#ifndef COUNTRIES_H
-#define COUNTRIES_H
+#ifndef RECORDS_H
+#define RECORDS_H
 
 /* ================================================================ */
 
 #include <getopt.h>
 
 #include "../../dictionary.h"
-#include "./include/Country.h"
+#include "./include/Record.h"
 
 /* ================================================================ */
 
-#endif /* COUNTRIES_H */
+#endif /* RECORDS_H */

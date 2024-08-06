@@ -7,10 +7,10 @@
 /* Not implemented in this scenario */
 void how_to_print_INT(void* data);
 
-void how_to_write_INT(void* data, FILE* file);
+int how_to_write_INT(void* data, FILE* file);
 
 /* Not implemented in this scenario */
-void how_to_read_INT(void* data, FILE* file);
+int how_to_read_INT(void* data, FILE* file);
 
 /* ================================================================ */
 
@@ -48,6 +48,8 @@ int main(int argc, char** argv) {
 
 /* ================================================================ */
 
-void how_to_write_INT(void* data, FILE* file) {
+int how_to_write_INT(void* data, FILE* file) {
     fwrite(data, sizeof(int), 1, file);
+
+    return 0;
 }
