@@ -26,7 +26,7 @@ int main(int argc, char** argv) {
         return EXIT_FAILURE;
     }
     
-    printf("The dictionry has been loaded successfully!\n");
+    printf("The dictionary has been loaded successfully!\n");
     Dict_print(d);
     
     Dict_destroy(d);
