@@ -89,7 +89,7 @@ The make command will create the following libraries:
 * `libCdD.a`: Static library
 * `libCdD.so` or `libCdD.dylib`: Dynamic (shared) library
 
-- **Include the header file**:
+- 4️⃣ **Include the header file**:
 
 In your C project, include the `dictionary.h` header file to access the *CdD* API:
 
@@ -97,7 +97,7 @@ In your C project, include the `dictionary.h` header file to access the *CdD* AP
 #include "dictionary.h"
 ```
 
-- **Link against the library**:
+- 5️⃣ **Link against the library**:
 
 When compiling your project, link against the *CdD* library. If you're using the static library, link against `libCdD.a`. For the dynamic library, link against `libCdD.so` or `libCdD.dylib`. For example:
 
