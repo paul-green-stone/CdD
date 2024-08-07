@@ -7,6 +7,9 @@ This is an implementation of a dictionary or associative array data structure in
 * [License](#license)
 * [Description](#description)
     * [Features](#features)
+* [Building](#building)
+    * [Prerequisites](#prerequisites)
+    * [Instllation](#installation)
 
 ## License
 
@@ -45,3 +48,61 @@ It's designed to work seamlessly on *\*nix* operating systems, including Linux a
 - 2️⃣ **Fast Performance**: Utilizing a hash table under the hood, *CdD* provides constant-time complexity for lookups, insertions, and deletions, making it an ideal choice for applications that demand quick data retrieval
 
 - 3️⃣ **Memory Management**: While *CdD* efficiently manages its internal memory allocation and deallocation, users are responsible for implementing their own memory allocation and deallocation functions for the data types they store. Properly managing memory in these functions is crucial to prevent memory leaks
+
+
+## Building
+
+### Prerequisites
+
+ To install and use *CdD*, you'll need the following:
+ 
+ - A C compiler (e.g., GCC or Clang)
+ - GNU Make utility
+ - Git (for cloning the repository)
+
+### Installation
+
+ Follow these steps to install and set up *CdD* on your system:
+ 
+ - 1️⃣ **Clone the repository**:
+ 
+ ```bash
+ git clone https://github.com/paul-green-stone/CdD.git
+ ```
+ 
+ - 2️⃣ **Navigate to the project directory**:
+ 
+ ```bash
+ cd CdD
+ ```
+ 
+ - 3️⃣ **Build the libraries**:
+ 
+Run make to compile the *CdD* library. This will generate both static and dynamic versions:
+
+```bash
+make
+```
+
+The make command will create the following libraries:
+
+* `libCdD.a`: Static library
+* `libCdD.so` or `libCdD.dylib`: Dynamic (shared) library
+
+- **Include the header file**:
+
+In your C project, include the `dictionary.h` header file to access the *CdD* API:
+
+```C
+#include "dictionary.h"
+```
+
+- **Link against the library**:
+
+When compiling your project, link against the *CdD* library. If you're using the static library, link against `libCdD.a`. For the dynamic library, link against `libCdD.so` or `libCdD.dylib`. For example:
+
+- Static library:
+
+```bash
+gcc -o your_program your_program.c /path/to/CdD/CdD.a
+```
