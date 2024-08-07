@@ -18,6 +18,11 @@ This is an implementation of a dictionary or associative array data structure in
       - [Encapsulation and Separation of Concerns](#encapsulation-and-separation-of-concerns)
     - [Working with Built-in Types](#working-with-built-in-types)
       - [Creating a Dictionary](#creating-a-dictionary)
+      - [Inserting Elements](#inserting-elements)
+        - [Parameters](#parameters)
+      - [Printing the Contents of the Dictionary](#printing-the-contents-of-the-dictionary)
+        - [Parameters](#parameters-1)
+        - [User-Defined `print` Function](#user-defined-print-function)
 
 ## License
 
@@ -189,3 +194,85 @@ if ((dict = Dict_new(10, print_int, destroy_int, save_int, load_int)) == NULL) {
 ```
 
 In this example, we create a dictionary with an initial capacity of 10 key-value pairs, specifically for storing integers. The function pointers `print_int`, `destroy_int`, `save_int`, and `load_int` should be user-defined functions that handle the respective operations for integers. We'll consider them in a short while.
+
+#### Inserting Elements
+
+To insert a new key-value pair into the dictionary, use the `Dict_insert` function. This function associates a unique string key with a specified value.
+
+```C
+ssize_t Dict_insert(const char* key, void* value, Dict_t dict);
+```
+
+##### Parameters
+
+- `key` - A pointer to a string that serves as a unique identifier for the value being inserted. This key must be unique within the dictionary; attempting to insert a value with a duplicate key will result in an error.
+
+- `value` - A pointer to the data you wish to store in the dictionary. This can point to any data type, but it is essential that the corresponding user-defined functions for handling this data type are properly implemented.
+  
+- `dict` - A `Dict_t` structure representing the dictionary instance where the key-value pair will be inserted.
+
+The `Dict_insert` function returns a non-negative value indicating the index in the internal storage where the value has been successfully inserted. If the insertion fails (for example, due to a duplicate key or insufficient memory), the function returns a negative value to indicate the error
+
+```C
+int number_one = 1;
+
+if ((Dict_insert("one", &number_one, dict)) >= 0) {
+    printf("The element has been inserted successfully\n");
+}
+```
+
+#### Printing the Contents of the Dictionary
+
+To print the contents of the dictionary, use the `Dict_print` function. This function iterates through the key-value pairs stored in the dictionary and invokes the user-defined `print` function for each value.
+
+```C
+void Dict_print(const Dict_t dict);
+```
+
+##### Parameters
+
+- `dict` - A `Dict_t` structure representing the dictionary instance whose contents you want to print.
+
+##### User-Defined `print` Function
+
+When creating the dictionary using `Dict_new`, you must provide a function pointer for the `print` parameter. This function will be responsible for printing the values stored in the dictionary.
+
+The signature of the `print` function should match the following:
+
+```C
+void (*print)(void* value);
+```
+
+Here, `value` is a pointer to the data stored in the dictionary. The print function should handle the appropriate casting and printing of the data based on its type.
+
+```C
+void how_to_print_INT(void* value) {
+    printf("%d", *((int*) value));
+}
+```
+
+In this example, we cast the `void*` pointer to an `int*` pointer and then dereference it to access the integer value.
+
+Alternatively, you can define the `print` function to accept an `int*` directly:
+
+```C
+void how_to_print_INT(int* value) {
+    printf("%d", *value);
+}
+```
+
+In this case, when passing the function pointer to `Dict_new`, you need to cast it explicitly:
+
+```C
+Dict_t dict = Dict_new(10, (void (*)(void*)) how_to_print_INT, ...);
+```
+
+Both approaches are valid, and the choice depends on your preference and coding style.
+
+```C
+Dict_t dict = Dict_new(10, how_to_print_INT, destroy_int, save_int, load_int);
+
+/* Insert some integer values into the dictionary */
+
+Dict_print(dict);
+```
