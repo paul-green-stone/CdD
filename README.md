@@ -20,9 +20,15 @@ This is an implementation of a dictionary or associative array data structure in
       - [Creating a Dictionary](#creating-a-dictionary)
       - [Inserting Elements](#inserting-elements)
         - [Parameters](#parameters)
+        - [Return Value](#return-value)
+        - [Example Usage](#example-usage)
       - [Printing the Contents of the Dictionary](#printing-the-contents-of-the-dictionary)
         - [Parameters](#parameters-1)
         - [User-Defined `print` Function](#user-defined-print-function)
+      - [Removing Values from the Dictionary](#removing-values-from-the-dictionary)
+        - [Parameters](#parameters-2)
+        - [Return Value](#return-value-1)
+        - [Example Usage](#example-usage-1)
 
 ## License
 
@@ -205,13 +211,17 @@ ssize_t Dict_insert(const char* key, void* value, Dict_t dict);
 
 ##### Parameters
 
-- `key` - A pointer to a string that serves as a unique identifier for the value being inserted. This key must be unique within the dictionary; attempting to insert a value with a duplicate key will result in an error.
+- `key` - A pointer to a string that serves as a unique identifier for the value being inserted. This key must be unique within the dictionary; attempting to insert a value with a duplicate key will result in an error
 
-- `value` - A pointer to the data you wish to store in the dictionary. This can point to any data type, but it is essential that the corresponding user-defined functions for handling this data type are properly implemented.
+- `value` - A pointer to the data you wish to store in the dictionary. This can point to any data type, but it is essential that the corresponding user-defined functions for handling this data type are properly implemented
   
-- `dict` - A `Dict_t` structure representing the dictionary instance where the key-value pair will be inserted.
+- `dict` - A `Dict_t` structure representing the dictionary instance where the key-value pair will be inserted
 
-The `Dict_insert` function returns a non-negative value indicating the index in the internal storage where the value has been successfully inserted. If the insertion fails (for example, due to a duplicate key or insufficient memory), the function returns a negative value to indicate the error
+##### Return Value
+
+The `Dict_insert` function returns a non-negative value indicating the index in the internal storage where the value has been successfully inserted. If the insertion fails (for example, due to a duplicate key or insufficient memory), the function returns a negative value to indicate the error.
+
+##### Example Usage
 
 ```C
 int number_one = 1;
@@ -231,7 +241,7 @@ void Dict_print(const Dict_t dict);
 
 ##### Parameters
 
-- `dict` - A `Dict_t` structure representing the dictionary instance whose contents you want to print.
+- `dict` - A `Dict_t` structure representing the dictionary instance whose contents you want to print
 
 ##### User-Defined `print` Function
 
@@ -276,3 +286,43 @@ Dict_t dict = Dict_new(10, how_to_print_INT, destroy_int, save_int, load_int);
 
 Dict_print(dict);
 ```
+
+#### Removing Values from the Dictionary
+
+To remove a key-value pair from the dictionary, use the `Dict_remove` function. This function takes a `key` as input and removes the associated value from the dictionary. Here goes its prototype:
+
+```C
+void* Dict_remove(const char* key, Dict_t dict);
+```
+
+##### Parameters
+
+- `key` - A pointer to a string representing the unique key of the key-value pair you want to remove from the dictionary
+
+- `dict` - A `Dict_t` structure representing the dictionary instance from which you want to remove the value
+
+##### Return Value
+
+The `Dict_remove` function returns a pointer to the data associated with the removed key-value pair. If the specified key is not found in the dictionary, the function returns `NULL`.
+
+❗❗❗ **Important**: It is crucial to properly deallocate the memory of the returned value if it was dynamically allocated. Use the user-defined destroy function provided to `Dict_new` to handle the deallocation process and prevent memory leaks.
+
+##### Example Usage
+
+```C
+Dict_t dict = Dict_new(10, print_int, destroy_int, save_int, load_int);
+
+/* Insert some integer values into the dictionary */
+
+void* removed_value = Dict_remove("key_to_remove", dict);
+
+if (removed_value != NULL) {
+    /* Deallocate the removed value */
+    destroy_int(removed_value);
+}
+else {
+    printf("Key not found in the dictionary.\n");
+}
+```
+
+In this example, we remove a key-value pair from the dictionary using `Dict_remove`. If the key is found, we obtain a pointer to the removed value and deallocate it using the `destroy_int` function, which is the user-defined destroy function provided to `Dict_new`.
