@@ -33,7 +33,7 @@ OS_NAME := $(shell uname -s)
 INCLUDE := $(wildcard include/*/*.h)
 
 # Library name
-LIB_NAME := CDict
+LIB_NAME := CdD
 
 # ================================ #
 
@@ -72,7 +72,7 @@ TARGET_SHARED := $(LIB_PREFIX)$(LIB_NAME)$(DLL_SUFFIX)
 # Setting the value of the variable HASH to the path of the `hash.c`
 HASH := $(addprefix source/hash/, hash.c)
 
-# Setting the value of the variable DICTIONARY to the path of the `Dict.c`
+# Setting the value of the variable DICTIONARY to the path of the `Dictionary.c`
 DICTIONARY := $(addprefix source/Dictionary/, Dictionary.c)
 
 # ================================================================ #

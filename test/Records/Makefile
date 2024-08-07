@@ -24,8 +24,8 @@ ALL_CFLAGS := $(CFLAGS) -Wall -Wextra -pedantic-errors -O2
 # ============================ SOURCE ============================ #
 # ================================================================ #
 
-# Setting the value of the variable COUNTRY to the path of the `country.c`
-COUNTRY := $(addprefix source/, Record.c)
+# Setting the value of the variable RECORD to the path of the `record.c`
+RECORD := $(addprefix source/, Record.c)
     
 # ================================================================ #
 # =========================== TARGETS ============================ #
@@ -49,23 +49,23 @@ rrm: $(OBJECTS)
 # ================================================================ #
 
 # Building the `country.o` object file from the COUNTRY
-$(OBJDIR)/Record.o: $(COUNTRY)
+$(OBJDIR)/Record.o: $(RECORD)
 	$(CC) $(ALL_CFLAGS) $(CFLAGS) -c $< -o $@
     
 test: $(OBJECTS) main.c
-	$(CC) $(CFLAGS) $(ALL_CFLAGS) -o $(BINS)/$@.out $^ ../../libCDict.a
+	$(CC) $(CFLAGS) $(ALL_CFLAGS) -o $(BINS)/$@.out $^ ../../libCdD.a
     
 radd: $(OBJECTS) radd.c
-	$(CC) $(CFLAGS) $(ALL_CFLAGS) -o $(BINS)/$@.out $^ ../../libCDict.a
+	$(CC) $(CFLAGS) $(ALL_CFLAGS) -o $(BINS)/$@.out $^ ../../libCdD.a
 
 rload: $(OBJECTS) rload.c
-	$(CC) $(CFLAGS) $(ALL_CFLAGS) -o $(BINS)/$@.out $^ ../../libCDict.a
+	$(CC) $(CFLAGS) $(ALL_CFLAGS) -o $(BINS)/$@.out $^ ../../libCdD.a
 
 rsrh: $(OBJECTS) rsrh.c
-	$(CC) $(CFLAGS) $(ALL_CFLAGS) -o $(BINS)/$@.out $^ ../../libCDict.a
+	$(CC) $(CFLAGS) $(ALL_CFLAGS) -o $(BINS)/$@.out $^ ../../libCdD.a
 
 rrm: $(OBJECTS) rrm.c
-	$(CC) $(CFLAGS) $(ALL_CFLAGS) -o $(BINS)/$@.out $^ ../../libCDict.a
+	$(CC) $(CFLAGS) $(ALL_CFLAGS) -o $(BINS)/$@.out $^ ../../libCdD.a
 
 # ================================================================ #
     
