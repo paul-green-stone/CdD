@@ -123,7 +123,7 @@ gcc -o your_program your_program.c -L=path/to/CdD -lCdD
 
 Replace *path/to/CdD* with the actual path to the *CdD* project directory.
 
-**Note**: When using the dynamic library, ensure that the system can locate `libCdD.so` or `libCdD.dylib` at runtime. The library must be in a standard library location (e.g., */usr/lib*, */usr/local/lib*) or any other location known to the system. You can also specify the library path at runtime using the `-Wl,-rpath` option:
+❗ **Note**: When using the dynamic library, ensure that the system can locate `libCdD.so` or `libCdD.dylib` at runtime. The library must be in a standard library location (e.g., */usr/lib*, */usr/local/lib*) or any other location known to the system. You can also specify the library path at runtime using the `-Wl,-rpath` option:
 
 ```bash
 gcc -o your_program your_program.c -L/path/to/CdD -CdD -Wl,-rpath=/path/to/CdD
@@ -176,7 +176,7 @@ Let's consider a scenario in which you need to store integer values under unique
 Dict_t Dict_new(size_t size, void (*print)(void* data), void (*destroy)(void* data), int (*save_data)(void* data, FILE* file), int (*load_data)(void** data, FILE* file))
 ```
 
-**Important**: Passing a negative number to `size` will result in an overflow, as the value will be cast to `size_t`, leading to an extremely large positive number. This may cause issues when allocating memory for the dictionary, potentially causing the program to crash or behave unexpectedly.
+❗❗❗ **Important**: Passing a negative number to `size` will result in an overflow, as the value will be cast to `size_t`, leading to an extremely large positive number. This may cause issues when allocating memory for the dictionary, potentially causing the program to crash or behave unexpectedly.
 
 ```C
 Dict_t dict = NULL;
