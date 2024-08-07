@@ -17,12 +17,12 @@ LOAD := load.out
 
 # Building the executable with a static library
 save: save.c
-	$(CC) $(ALL_CFLAGS) -o $(SAVE) $^ ../../libCDict.a
+	$(CC) $(ALL_CFLAGS) -o $(SAVE) $^ -L../../ -Wl,-rpath=../../ -lCdD
     
 
 # Building the executable with a static library
 load: load.c
-	$(CC) $(ALL_CFLAGS) -o $(LOAD) $^ ../../libCDict.a
+	$(CC) $(ALL_CFLAGS) -o $(LOAD) $^ -L../../ -Wl,-rpath=../../ -lCdD
 
 # ================================================================ #
 

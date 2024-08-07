@@ -53,19 +53,18 @@ $(OBJDIR)/Record.o: $(RECORD)
 	$(CC) $(ALL_CFLAGS) $(CFLAGS) -c $< -o $@
     
 test: $(OBJECTS) main.c
-	$(CC) $(CFLAGS) $(ALL_CFLAGS) -o $(BINS)/$@.out $^ ../../libCdD.a
+	$(CC) $(CFLAGS) $(ALL_CFLAGS) -o $(BINS)/$@.out $^ -L../../ -lCdD -Wl,-rpath=../../
     
 radd: $(OBJECTS) radd.c
-	$(CC) $(CFLAGS) $(ALL_CFLAGS) -o $(BINS)/$@.out $^ ../../libCdD.a
+	$(CC) $(CFLAGS) $(ALL_CFLAGS) -o $(BINS)/$@.out $^ -L../../ -lCdD -Wl,-rpath=../../
 
 rload: $(OBJECTS) rload.c
-	$(CC) $(CFLAGS) $(ALL_CFLAGS) -o $(BINS)/$@.out $^ ../../libCdD.a
+	$(CC) $(CFLAGS) $(ALL_CFLAGS) -o $(BINS)/$@.out $^ -L../../ -lCdD -Wl,-rpath=../../
 
 rsrh: $(OBJECTS) rsrh.c
-	$(CC) $(CFLAGS) $(ALL_CFLAGS) -o $(BINS)/$@.out $^ ../../libCdD.a
-
+	$(CC) $(CFLAGS) $(ALL_CFLAGS) -o $(BINS)/$@.out $^ -L../../ -lCdD -Wl,-rpath=../../
 rrm: $(OBJECTS) rrm.c
-	$(CC) $(CFLAGS) $(ALL_CFLAGS) -o $(BINS)/$@.out $^ ../../libCdD.a
+	$(CC) $(CFLAGS) $(ALL_CFLAGS) -o $(BINS)/$@.out $^ -L../../ -lCdD -Wl,-rpath=../../
 
 # ================================================================ #
     
