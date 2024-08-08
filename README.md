@@ -33,6 +33,8 @@ This is an implementation of a dictionary or associative array data structure in
         - [Parameters](#parameters-3)
         - [Return Value](#return-value-2)
         - [Example Usage](#example-usage-2)
+      - [Destroying the Dictionary](#destroying-the-dictionary)
+        - [User-Defined `destroy` Function](#user-defined-destroy-function)
 
 ## License
 
@@ -333,7 +335,7 @@ In this example, we remove a key-value pair from the dictionary using `Dict_remo
 
 #### Searching Values in the Dictionary
 
-To retrieve a value stored in the dictionary under a specified key, use the Dict_lookup function. This function allows you to find the data associated with a given key:
+To retrieve a value stored in the dictionary under a specified key, use the `Dict_lookup` function. This function allows you to find the data associated with a given key:
 
 ```C
 void* Dict_lookup(const char* key, Dict_t dict);
@@ -356,7 +358,7 @@ Dict_t dict = Dict_new(10, print_int, destroy_int, save_int, load_int);
 
 /* Insert some integer values into the dictionary */
 
-int* value = (int*)Dict_lookup("key_to_lookup", dict);
+int* value = (int*) Dict_lookup("key_to_lookup", dict);
 
 if (value != NULL) {
     printf("Found value: %d\n", *value);
@@ -365,3 +367,21 @@ if (value != NULL) {
 }
 
 ```
+
+#### Destroying the Dictionary
+
+To safely remove a dictionary and free all associated memory, use the `Dict_destroy` function. This function will delete all elements from the dictionary by calling the user-defined destroy function for each element stored, and it will also free the memory allocated for the dictionary itself. The prototype is the following:
+
+```C
+void Dict_destroy(Dict_t dict);
+```
+
+##### User-Defined `destroy` Function
+
+When creating a dictionary using `Dict_new`, you must specify a destroy function that will handle the deallocation of the data stored in the dictionary.
+
+- **For Built-in Data Types**: If you do not intend to store values in a file and/or load them back, you can specify `NULL` for the `destroy` function. However, this means you must ensure that the data does not require manual deallocation.
+
+- **For Dynamically Allocated Data**: If you are dynamically allocating memory for integers (or any other data type) and storing them in the dictionary, you should specify `free` as the ` destroy` function. This allows the dictionary to properly deallocate the memory when the dictionary is destroyed.
+
+❗❗❗ **Important**: If you create a dictionary that contains statically allocated data but plan to save data into a file and load it back, you will need to specify a destroy function that can handle the deallocation of dynamically allocated memory created during the loading process. This ensures that all memory is managed correctly, even if the original data was statically allocated.
