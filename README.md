@@ -29,6 +29,10 @@ This is an implementation of a dictionary or associative array data structure in
         - [Parameters](#parameters-2)
         - [Return Value](#return-value-1)
         - [Example Usage](#example-usage-1)
+      - [Searching Values in the Dictionary](#searching-values-in-the-dictionary)
+        - [Parameters](#parameters-3)
+        - [Return Value](#return-value-2)
+        - [Example Usage](#example-usage-2)
 
 ## License
 
@@ -326,3 +330,38 @@ else {
 ```
 
 In this example, we remove a key-value pair from the dictionary using `Dict_remove`. If the key is found, we obtain a pointer to the removed value and deallocate it using the `destroy_int` function, which is the user-defined destroy function provided to `Dict_new`.
+
+#### Searching Values in the Dictionary
+
+To retrieve a value stored in the dictionary under a specified key, use the Dict_lookup function. This function allows you to find the data associated with a given key:
+
+```C
+void* Dict_lookup(const char* key, Dict_t dict);
+```
+
+##### Parameters
+
+- `key` - A pointer to a string representing the unique key associated with the value you want to retrieve from the dictionary.
+
+- `dict` - A `Dict_t` structure representing the dictionary instance from which you want to look up the value.
+
+##### Return Value
+
+The `Dict_lookup` function returns a pointer to the data associated with the specified key. If the key is found, the function returns a pointer to the corresponding value. If there is no such key in the dictionary, the function returns `NULL`.
+
+##### Example Usage
+
+```C
+Dict_t dict = Dict_new(10, print_int, destroy_int, save_int, load_int);
+
+/* Insert some integer values into the dictionary */
+
+int* value = (int*)Dict_lookup("key_to_lookup", dict);
+
+if (value != NULL) {
+    printf("Found value: %d\n", *value);
+} else {
+    printf("Key not found in the dictionary.\n");
+}
+
+```
