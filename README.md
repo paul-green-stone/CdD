@@ -380,7 +380,7 @@ void Dict_destroy(Dict_t dict);
 
 When creating a dictionary using `Dict_new`, you must specify a destroy function that will handle the deallocation of the data stored in the dictionary.
 
-- **For Built-in Data Types**: If you do not intend to store values in a file and/or load them back, you can specify `NULL` for the `destroy` function. However, this means you must ensure that the data does not require manual deallocation.
+- **For Statically Allocated Data**: If you do not intend to store values in a file and/or load them back, you can specify `NULL` for the `destroy` function. However, this means you must ensure that the data does not require manual deallocation.
 
 - **For Dynamically Allocated Data**: If you are dynamically allocating memory for integers (or any other data type) and storing them in the dictionary, you should specify `free` as the ` destroy` function. This allows the dictionary to properly deallocate the memory when the dictionary is destroyed.
 
