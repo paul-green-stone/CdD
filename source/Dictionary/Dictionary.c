@@ -6,21 +6,27 @@
 
 /* ================================================================ */
 
-static struct mapping {
+struct mapping {
     void* value;
     char key[MAX_TAG_LEN];
 };
 
 /* ================================ */
 
-static struct dictionary {
+struct dictionary {
     
+    /* The capacity of the dictionary, representing the maximum number of elements it can hold */
     size_t logical_size;
+    /* The current number of key-value pairs stored in the dictionary */
     size_t actual_size;
     
+    /* How to output data stored in the dictionary */
     void (*print)(void* data);
+    /* How to free memory (if needed) allocated for data */
     void (*destroy)(void* data);
+    /* How to save a value in a key-value pair into the file */
     int (*save_data)(void* data, FILE* file);
+    /* How to load a value in a key-value pair from the file */
     int (*load_data)(void** data, FILE* file);
     
     struct mapping** mappings;
@@ -274,15 +280,22 @@ int Dict_save(const Dict_t dict, const char* filename) {
         return -1;
     }
 
+    if (dict->save_data == NULL) {
+        printf("[%s] Error: unable to save the dictionary. The `save_data` function is missing\n", __func__);
+
+        /* ======== */
+        return -1;
+    }
+
     if ((file = fopen(filename, "wb")) == NULL) {
-        fprintf(stderr, "Failed to open file for writing: %s\n", strerror(errno));
+        fprintf(stderr, "[%s] Error: failed to open the file for writing (%s)\n", __func__, strerror(errno));
 
         /* ======== */
         return -1;
     }
 
     if (fwrite(&dict->logical_size, sizeof(dict->logical_size), 1, file) != 1) {
-        fprintf(stderr, "Error has occured: written unexpected number of bytes for the dictionary size\n");
+        fprintf(stderr, "[%s] Error: an unexpected number of bytes was written for the dictionary size\n", __func__);
 
         /* ======== */
         return -1;
@@ -294,18 +307,21 @@ int Dict_save(const Dict_t dict, const char* filename) {
             size_t key_len = strlen(dict->mappings[i]->key);
 
             if ((bytes_written = fwrite(&key_len, sizeof(size_t), 1, file)) != 1) {
-                fprintf(stderr, "Error has occured: written unexpected number of bytes for the dictionary key size\n");
+                fprintf(stderr, "[%s] Error: an unexpected number of bytes was written for the dictionary key size\n", __func__);
             }
 
             if ((bytes_written = fwrite(dict->mappings[i]->key, sizeof(char), key_len, file)) != key_len) {
-                fprintf(stderr, "Error has occured: written unexpected number of bytes for the dictionary key (key = %s)\n", dict->mappings[i]->key);
+                fprintf(stderr, "[%s] Error: an unexpected number of bytes was written for the dictionary key (key = %s)\n", __func__, dict->mappings[i]->key);
 
                 /* ======== */
                 return -1;
             }
                        
-            if (dict->save_data) {
-                dict->save_data(dict->mappings[i]->value, file);
+            if (dict->save_data(dict->mappings[i]->value, file) != EXIT_SUCCESS) {
+                fprintf(stderr, "[%s] Error: unable to save the value. The dictionary may be partially written\n", __func__);
+
+                /* ======== */
+                return -1;
             }
         }
     }
@@ -332,14 +348,14 @@ Dict_t Dict_load(const char* filename, void (*print)(void* value), void (*destro
     /* ================ */
 
     if ((file = fopen(filename, "rb")) == NULL) {
-        fprintf(stderr, "Failed to open file for reading: %s\n", strerror(errno));
+        fprintf(stderr, "[%s] Error: failed to open the file for reading (%s)\n", __func__, strerror(errno));
 
         /* ======== */
         return NULL;
     }
 
     if ((bytes_read = fread(&size, sizeof(size), 1, file)) != 1) {
-        fprintf(stderr, "Error has occured: unable to read the dictionary size (%zd)\n", bytes_read);
+        fprintf(stderr, "[%s] Error: an unexpected number of bytes was read for the dictionary size\n", __func__);
 
         /* ======== */
         return NULL;
@@ -363,21 +379,21 @@ Dict_t Dict_load(const char* filename, void (*print)(void* value), void (*destro
                 break ;
             }
 
-            fprintf(stderr, "Error has occured: unable to read the key size (%zd)\n", bytes_read);
+            fprintf(stderr, "[%s] Error: an unexpected number of bytes was read for the dictionary key size\n", __func__);
 
             /* ======== */
             return NULL;
         }
 
         if ((key = malloc(sizeof(char) * key_len + 1)) == NULL) {
-            fprintf(stderr, "Error has occured: %s\n", strerror(errno));
+            fprintf(stderr, "[%s] Error: %s\n", __func__, strerror(errno));
 
             /* ======== */
             return dict;
         }
 
         if ((bytes_read = fread(key, sizeof(char), key_len, file)) != key_len) {
-            fprintf(stderr, "Error has occured: unable to read the key value\n");
+            fprintf(stderr, "[%s] Error: an unexpected number of bytes was read for the dictionary key\n", __func__);
 
             /* ======== */
             return NULL;
@@ -385,7 +401,14 @@ Dict_t Dict_load(const char* filename, void (*print)(void* value), void (*destro
 
         key[bytes_read] = '\0';
 
-        dict->load_data(&value, file);
+        if (dict->load_data(&value, file) != EXIT_SUCCESS) {
+            fprintf(stderr, "[%s] Error: Unable to load value. Dictionary may be partially loaded\n", __func__);
+
+            free(key);
+
+            /* ======== */
+            break ;
+        }
 
         Dict_insert(key, value, dict);
         
