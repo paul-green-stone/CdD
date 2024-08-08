@@ -18,19 +18,20 @@ This is an implementation of a dictionary or associative array data structure in
       - [Encapsulation and Separation of Concerns](#encapsulation-and-separation-of-concerns)
     - [Working with Built-in Types](#working-with-built-in-types)
       - [Creating a Dictionary](#creating-a-dictionary)
-      - [Inserting Elements](#inserting-elements)
         - [Parameters](#parameters)
+      - [Inserting Elements](#inserting-elements)
+        - [Parameters](#parameters-1)
         - [Return Value](#return-value)
         - [Example Usage](#example-usage)
       - [Printing the Contents of the Dictionary](#printing-the-contents-of-the-dictionary)
-        - [Parameters](#parameters-1)
+        - [Parameters](#parameters-2)
         - [User-Defined `print` Function](#user-defined-print-function)
       - [Removing Values from the Dictionary](#removing-values-from-the-dictionary)
-        - [Parameters](#parameters-2)
+        - [Parameters](#parameters-3)
         - [Return Value](#return-value-1)
         - [Example Usage](#example-usage-1)
       - [Searching Values in the Dictionary](#searching-values-in-the-dictionary)
-        - [Parameters](#parameters-3)
+        - [Parameters](#parameters-4)
         - [Return Value](#return-value-2)
         - [Example Usage](#example-usage-2)
       - [Destroying the Dictionary](#destroying-the-dictionary)
@@ -40,12 +41,18 @@ This is an implementation of a dictionary or associative array data structure in
           - [Prameters](#prameters)
           - [User-Defned `save_data` Function](#user-defned-save_data-function)
         - [`Dict_load`](#dict_load)
-          - [Parameters](#parameters-4)
+          - [Parameters](#parameters-5)
           - [User-Defned `load_data` Function](#user-defned-load_data-function)
         - [Example Usage](#example-usage-3)
     - [Working with Complex Data](#working-with-complex-data)
       - [Command Line Interface (CLI) Programs](#command-line-interface-cli-programs)
         - [`radd`](#radd)
+        - [`rload`](#rload)
+        - [`rrm`](#rrm)
+        - [`rsch`](#rsch)
+  - [Credits](#credits)
+  - [How to Contribute to the Project](#how-to-contribute-to-the-project)
+    - [How to Contribute](#how-to-contribute)
 
 ## License
 
@@ -203,6 +210,18 @@ Let's consider a scenario in which you need to store integer values under unique
 ```C
 Dict_t Dict_new(size_t size, void (*print)(void* data), void (*destroy)(void* data), int (*save_data)(void* data, FILE* file), int (*load_data)(void** data, FILE* file))
 ```
+
+##### Parameters
+
+- `size` - The initial capacity of the dictionary
+
+- `print` - A function pointer to a user-defined function responsible for printing the values stored in the dictionary
+
+- `destroy` - A function pointer to a user-defined function that handles the destruction and deallocation of values stored in the dictionary
+  
+- `save_data` - A function pointer to a user-defined function that saves the values stored in the dictionary to a file
+
+- `load_data` - A function pointer to a user-defined function that loads values from a file into the dictionary
 
 ❗❗❗ **Important**: Passing a negative number to `size` will result in an overflow, as the value will be cast to `size_t`, leading to an extremely large positive number. This may cause issues when allocating memory for the dictionary, potentially causing the program to crash or behave unexpectedly.
 
@@ -500,4 +519,52 @@ Several command line interface (CLI) programs are provided to interact with the 
 
 Adds a new record to the database. This command allows you to input the details of a person and store them in the dictionary.
 
-![Usage Statement]("test/Records/screenshots/radd-usage.png")
+![Usage Statement](test/Records/screenshots/radd-usage.png)
+
+![Adding Records](test/Records/screenshots/radd.png)
+
+##### `rload`
+
+Displays the contents of the database. This command retrieves and prints all records currently stored in the dictionary.
+
+![Adding Records](test/Records/screenshots/rload.png)
+
+##### `rrm`
+
+Removes a record from the database. You can specify the key of the record you wish to delete from the dictionary.
+
+![Removing Records](test/Records/screenshots/rrm.png)
+
+##### `rsch`
+
+Looks up a specific key in the database. This command allows you to search for a record by its key and view its details.
+
+![Searching for Records](test/Records/screenshots/rsch.png)
+
+## Credits
+
+- [Mastering Algorithms with C](https://www.amazon.com/Mastering-Algorithms-Techniques-Sorting-Encryption/dp/1565924533/ref=sr_1_1?crid=AA96J1T5PIO4&dib=eyJ2IjoiMSJ9.S5g19Ycq7PijV6sRKvYh6Rj2DutxwfPyS3mmKk7KPCscVD53z1sVHM-NnadCSXBaG35zx9HS4JG9h_oaf9gp8nNK7bv36JX1Xa7Fr1nb1DxWUD9Jff_ldQkt70u9okDJj7qLhWWeaqN9S-ggzyw3vXPjiBoQkPmE19_ELNnsuNesHb6RRABBpn7BqZMxKyphf5TgCw0az82B8ydWbAW0o2qpjQjM-Tp2XScZ7p48Hv0.iSwdKJx4QoD3NdSd2jFCVw1pxIxddXyplwYH_y8k0IY&dib_tag=se&keywords=Mastering+algorithms+with+C&qid=1723144947&sprefix=mastering+algorithms+with+c%2Caps%2C248&sr=8-1)
+  
+- [Understanding and Using C Pointers](https://www.amazon.com/Understanding-Using-Pointers-Techniques-Management/dp/1449344186/ref=sr_1_1?crid=3R6U02LTK6TMF&dib=eyJ2IjoiMSJ9.v3J4BdHozG5HdTJJ7GUHchbRkL3C93v1Ona1QkD1ae4kde8kMYzo1WPhyzUXFoU_3Gr9xJdRuiTyh-2-fNHXpQ.DXnTe0mGwKhMIXlVhO7jf6XnR4mQIYyBcJzCVoAdhiM&dib_tag=se&keywords=understanding+and+using+pointers+with+C&qid=1723145013&sprefix=understanding+and+using+pointers+with+%2Caps%2C235&sr=8-1)
+
+- [Notes on `-Wl,-rpath,-Wl`](https://stackoverflow.com/questions/6562403/i-dont-understand-wl-rpath-wl/6562437#6562437)
+
+- [Associative Array](https://en.wikipedia.org/wiki/Associative_array)
+
+- [Key-Value Database](https://en.wikipedia.org/wiki/Key%E2%80%93value_database)
+
+## How to Contribute to the Project
+
+Thank you for your interest in contributing to this project! I welcome contributions from everyone, whether you're a seasoned developer or new to open source. Here’s how you can get involved:
+
+### How to Contribute
+
+1. **Reporting Issues**: If you encounter a bug, feel free to create a new issue with detailed information.
+
+2. **Submitting Code**: If you want to contribute code, please fork the repository and create a new branch for your changes. Make sure to follow the coding style used in the project.
+
+3. **Creating Pull Requests**: Once your changes are ready, submit a pull request. Include a clear description of what your changes do and reference any related issues.
+
+4. **Documentation**: Contributions to the documentation are also appreciated! If you find any unclear sections or want to add new content, please feel free to make changes.
+
+5. **Testing**: If you have experience with testing, you can help by writing tests for existing features or new functionality.
