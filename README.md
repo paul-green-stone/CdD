@@ -35,6 +35,17 @@ This is an implementation of a dictionary or associative array data structure in
         - [Example Usage](#example-usage-2)
       - [Destroying the Dictionary](#destroying-the-dictionary)
         - [User-Defined `destroy` Function](#user-defined-destroy-function)
+      - [Saving and Loading the Dictionary](#saving-and-loading-the-dictionary)
+        - [`Dict_save`](#dict_save)
+          - [Prameters](#prameters)
+          - [User-Defned `save_data` Function](#user-defned-save_data-function)
+        - [`Dict_load`](#dict_load)
+          - [Parameters](#parameters-4)
+          - [User-Defned `load_data` Function](#user-defned-load_data-function)
+        - [Example Usage](#example-usage-3)
+    - [Working with Complex Data](#working-with-complex-data)
+      - [Command Line Interface (CLI) Programs](#command-line-interface-cli-programs)
+        - [`radd`](#radd)
 
 ## License
 
@@ -385,3 +396,108 @@ When creating a dictionary using `Dict_new`, you must specify a destroy function
 - **For Dynamically Allocated Data**: If you are dynamically allocating memory for integers (or any other data type) and storing them in the dictionary, you should specify `free` as the ` destroy` function. This allows the dictionary to properly deallocate the memory when the dictionary is destroyed.
 
 ❗❗❗ **Important**: If you create a dictionary that contains statically allocated data but plan to save data into a file and load it back, you will need to specify a destroy function that can handle the deallocation of dynamically allocated memory created during the loading process. This ensures that all memory is managed correctly, even if the original data was statically allocated.
+
+#### Saving and Loading the Dictionary
+
+##### `Dict_save`
+
+To save the contents of a dictionary to a file, use the `Dict_save` function. This function writes the key-value pairs stored in the dictionary to a specified file in binary format.
+
+```C
+int Dict_save(const Dict_t dict, const char* filename);
+```
+
+###### Prameters
+
+- `dict` - A `Dict_t` structure representing the dictionary instance you want to save
+
+- `filename` - A string specifying the name of the file where the dictionary contents will be written
+
+###### User-Defned `save_data` Function
+
+The `Dict_save` function is responsible for writing the keys to the file. It uses the user-defined `save_data` function provided to `Dict_new` to handle the writing of individual values associated with each key. Here's an example of a `save_data` function for integers:
+
+```C
+int how_to_save_INT(void* data, FILE* file) {
+
+    /* It's a good practice to check return values, but I just omitted it for simplicity :) */ 
+
+    fwrite(data, sizeof(int), 1, file);
+
+    return 0;
+}
+```
+
+This function writes an integer value to the file using `fwrite`. It is important to note that the `save_data` function only handles the value, while the `Dict_save` function takes care of writing the corresponding key.
+
+##### `Dict_load`
+
+To load a dictionary from a file, use the `Dict_load` function. This function reads the key-value pairs from a file and reconstructs the dictionary in memory.
+
+```C
+Dict_t Dict_load(const char* filename, void (*print)(void* value), void (*destroy)(void* value), int (*save_data)(void* data, FILE* file), int (*load_data)(void** data, FILE* file));
+```
+
+###### Parameters
+
+- `filename` - A string specifying the name of the file from which the dictionary contents will be loaded
+
+- `print`, `destroy`, `save_data` - Function pointers for the corresponding operations, as described in the `Dict_new` function
+
+- `load_data` - A function pointer to a user-defined function that loads data from the file. The function should match the following signature:
+  
+```C
+int (*load_data)(void** data, FILE* file);
+```
+
+###### User-Defned `load_data` Function
+
+The `load_data` function is responsible for allocating memory and loading the value from the file. The key is read by the `Dict_load` function itself.
+
+It should also return `EXIT_SUCCESS` (0) on success, or `EXIT_FAILURE` (non-zero) if an error occurs. Here’s an example for integers:
+
+```C
+int how_to_read_INT(void** data, FILE* file) {
+
+    *data = malloc(sizeof(int));
+
+    if (*data = NULL) {
+      return EXIT_FAILURE;
+    }
+
+    /* do not forget to check the return value */
+    fread(*data, sizeof(int), 1, file);
+
+    return EXIT_SUCCESS;
+}
+```
+
+##### Example Usage
+
+```C
+Dict_t dict = Dict_new(10, print_int, destroy_int, how_to_write_INT, how_to_load_INT);
+
+/* Insert some integer values into the dictionary */
+
+Dict_save(dict, "dictionary.bin");
+
+/* ... some time later ... */
+
+Dict_t loaded_dict = Dict_load("dictionary.bin", print_int, destroy_int, how_to_save_INT, how_to_load_INT);
+```
+
+In this example, we save the dictionary to a file named "dictionary.bin" using `Dict_save`. Later, we load the dictionary from the same file using `Dict_load`, specifying the appropriate user-defined functions for handling the data type (in this case, integers).
+
+### Working with Complex Data
+
+In the source code, you will find usage cases (under `test/Records/`) that demonstrate how to manage records using the dictionary. These records function like a fake database, allowing you to store and manipulate information about individuals with different access levels.
+
+#### Command Line Interface (CLI) Programs
+
+Several command line interface (CLI) programs are provided to interact with the improvised database:
+
+##### `radd`
+
+Adds a new record to the database. This command allows you to input the details of a person and store them in the dictionary.
+
+![Usage Statement]("test/Records/screenshots/radd-usage.png")
