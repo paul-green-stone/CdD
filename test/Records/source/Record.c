@@ -68,7 +68,7 @@ void Record_print(const Record* r) {
 
 int Record_save(Record* r, FILE* file) {
 
-    size_t string_size = 0;
+    size_t bytes_to_read = 0;
     size_t bytes_written = 0;
 
     /* ================== */
@@ -77,16 +77,16 @@ int Record_save(Record* r, FILE* file) {
         return EXIT_FAILURE;
     }
 
-    string_size = strlen(r->id);
+    bytes_to_read = strlen(r->id);
 
-    if ((bytes_written = fwrite(&string_size, sizeof(size_t), 1, file)) != 1) {
+    if ((bytes_written = fwrite(&bytes_to_read, sizeof(size_t), 1, file)) != 1) {
         fprintf(stderr, "Written unexpected number of bytes\n");
 
         /* ======== */
         return EXIT_FAILURE;
     }
 
-    if ((bytes_written = fwrite(r->id, sizeof(char), string_size, file)) != string_size * sizeof(char)) {
+    if ((bytes_written = fwrite(r->id, sizeof(char), bytes_to_read, file)) != bytes_to_read * sizeof(char)) {
         fprintf(stderr, "Written unexpected number of bytes\n");
 
         /* ======== */
@@ -95,16 +95,16 @@ int Record_save(Record* r, FILE* file) {
 
     /* ======== */
 
-    string_size = strlen(r->name);
+    bytes_to_read = strlen(r->name);
 
-    if ((bytes_written = fwrite(&string_size, sizeof(size_t), 1, file)) != 1) {
+    if ((bytes_written = fwrite(&bytes_to_read, sizeof(size_t), 1, file)) != 1) {
         fprintf(stderr, "Written unexpected number of bytes\n");
 
         /* ======== */
         return EXIT_FAILURE;
     }
 
-    if ((bytes_written = fwrite(r->name, sizeof(char), string_size, file)) != string_size * sizeof(char)) {
+    if ((bytes_written = fwrite(r->name, sizeof(char), bytes_to_read, file)) != bytes_to_read * sizeof(char)) {
         fprintf(stderr, "Written unexpected number of bytes\n");
 
         /* ======== */
@@ -133,27 +133,26 @@ int Record_load(Record** record, FILE* file) {
     char* name = NULL;
     unsigned int level = 0;
 
-    size_t bytes_to_read = 0;
     size_t bytes_read = 0;
 
-    size_t string_size = 0;
+    size_t bytes_to_read = 0;
 
     /* ================================================ */
     /* ================== Reading ID ================== */
     /* ================================================ */
 
-    if ((bytes_read = fread(&string_size, sizeof(size_t), 1, file)) != 1) {
-        fprintf(stderr, "Read unexpected number of bytes for size (%s) (%zd - %zd)\n", strerror(errno), bytes_read, string_size);
+    if ((bytes_read = fread(&bytes_to_read, sizeof(size_t), 1, file)) != 1) {
+        fprintf(stderr, "Read unexpected number of bytes for size (%s) (%zd - %zd)\n", strerror(errno), bytes_read, bytes_to_read);
 
         /* ======== */
         return EXIT_FAILURE;
     }
 
-    if ((id = malloc(sizeof(char) * string_size + 1)) == NULL) {
+    if ((id = malloc(sizeof(char) * bytes_to_read + 1)) == NULL) {
         return EXIT_FAILURE;
     }
 
-    if ((bytes_read = fread(id, sizeof(char), string_size, file)) != string_size) {
+    if ((bytes_read = fread(id, sizeof(char), bytes_to_read, file)) != bytes_to_read) {
         fprintf(stderr, "Read unexpected number of bytes\n");
 
         /* ======== */
@@ -166,7 +165,7 @@ int Record_load(Record** record, FILE* file) {
     /* =============== Reading the name =============== */
     /* ================================================ */
     
-    if (fread(&string_size, sizeof(size_t), 1, file) != 1) {
+    if (fread(&bytes_to_read, sizeof(size_t), 1, file) != 1) {
         fprintf(stderr, "Read unexpected number of bytes\n");
 
         free(id);
@@ -175,14 +174,14 @@ int Record_load(Record** record, FILE* file) {
         return EXIT_FAILURE;
     }
 
-    if ((name = malloc(sizeof(char) * string_size + 1)) == NULL) {
+    if ((name = malloc(sizeof(char) * bytes_to_read + 1)) == NULL) {
         free(id);
 
         /* ======== */
         return EXIT_FAILURE;
     }
 
-    if ((bytes_read = fread(name, sizeof(char), string_size, file)) != string_size) {
+    if ((bytes_read = fread(name, sizeof(char), bytes_to_read, file)) != bytes_to_read) {
         fprintf(stderr, "Read unexpected number of bytes\n");
 
         free(id);
