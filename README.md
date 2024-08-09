@@ -173,8 +173,8 @@ gcc -o your_program your_program.c -L/path/to/CdD -CdD -Wl,-rpath=/path/to/CdD
 ```C
 static struct dictionary {
     
-    size_t logical_size;
-    size_t actual_size;
+    size_t capacity;
+    size_t size;
     
     void (*print)(void* data);
     void (*destroy)(void* data);
@@ -187,8 +187,8 @@ static struct dictionary {
 
 #### Components
 
-- `logical_size` - This member indicates the capacity of the dictionary, representing the maximum number of key-value pairs that the dictionary can hold
-- `actual_size` - This member tracks the current number of key-value pairs stored in the dictionary. It provides a real-time count of how many elements are present
+- `capacity` - This member indicates the capacity of the dictionary, representing the maximum number of key-value pairs that the dictionary can hold
+- `size` - This member tracks the current number of key-value pairs stored in the dictionary. It provides a real-time count of how many elements are present
 - `print` - A pointer to a user-defined function that handles the printing of data items. This allows for customizable output formats when displaying the contents of the dictionary
 - `destroy` -  A pointer to a user-defined function responsible for properly deallocating memory associated with data items. This is crucial for preventing memory leaks and ensuring efficient memory management
 - `save_data` - A pointer to a user-defined function that facilitates saving a data item to a specified file. This enables persistence of data, allowing users to store their dictionary contents for later retrieval
@@ -208,7 +208,7 @@ You interact with the dictionary exclusively through the provided API, which exp
 Let's consider a scenario in which you need to store integer values under unique names (keys). To create a new instance of the dictionary, use the `Dict_new` function. It's prototype is the following:
 
 ```C
-Dict_t Dict_new(size_t size, void (*print)(void* data), void (*destroy)(void* data), int (*save_data)(void* data, FILE* file), int (*load_data)(void** data, FILE* file))
+Dict_t* Dict_new(size_t size, void (*print)(void* data), void (*destroy)(void* data), int (*save_data)(void* data, FILE* file), int (*load_data)(void** data, FILE* file))
 ```
 
 ##### Parameters
@@ -226,7 +226,7 @@ Dict_t Dict_new(size_t size, void (*print)(void* data), void (*destroy)(void* da
 ❗❗❗ **Important**: Passing a negative number to `size` will result in an overflow, as the value will be cast to `size_t`, leading to an extremely large positive number. This may cause issues when allocating memory for the dictionary, potentially causing the program to crash or behave unexpectedly.
 
 ```C
-Dict_t dict = NULL;
+Dict_t dict* = NULL;
 
 if ((dict = Dict_new(10, print_int, destroy_int, save_int, load_int)) == NULL) {
     fprintf(stderr, "Error has occured: %s\n", strerror(errno));
@@ -242,7 +242,7 @@ In this example, we create a dictionary with an initial capacity of 10 key-value
 To insert a new key-value pair into the dictionary, use the `Dict_insert` function. This function associates a unique string key with a specified value.
 
 ```C
-ssize_t Dict_insert(const char* key, void* value, Dict_t dict);
+ssize_t Dict_insert(const char* key, void* value, Dict_t* dict);
 ```
 
 ##### Parameters
@@ -251,7 +251,7 @@ ssize_t Dict_insert(const char* key, void* value, Dict_t dict);
 
 - `value` - A pointer to the data you wish to store in the dictionary. This can point to any data type, but it is essential that the corresponding user-defined functions for handling this data type are properly implemented
   
-- `dict` - A `Dict_t` structure representing the dictionary instance where the key-value pair will be inserted
+- `dict` - A pointer to the `Dict_t` structure representing the dictionary instance where the key-value pair will be inserted
 
 ##### Return Value
 
@@ -272,7 +272,7 @@ if ((Dict_insert("one", &number_one, dict)) >= 0) {
 To print the contents of the dictionary, use the `Dict_print` function. This function iterates through the key-value pairs stored in the dictionary and invokes the user-defined `print` function for each value.
 
 ```C
-void Dict_print(const Dict_t dict);
+void Dict_print(const Dict_t* dict);
 ```
 
 ##### Parameters
@@ -310,13 +310,13 @@ void how_to_print_INT(int* value) {
 In this case, when passing the function pointer to `Dict_new`, you need to cast it explicitly:
 
 ```C
-Dict_t dict = Dict_new(10, (void (*)(void*)) how_to_print_INT, ...);
+Dict_t* dict = Dict_new(10, (void (*)(void*)) how_to_print_INT, ...);
 ```
 
 Both approaches are valid, and the choice depends on your preference and coding style.
 
 ```C
-Dict_t dict = Dict_new(10, how_to_print_INT, destroy_int, save_int, load_int);
+Dict_t* dict = Dict_new(10, how_to_print_INT, destroy_int, save_int, load_int);
 
 /* Insert some integer values into the dictionary */
 
@@ -328,7 +328,7 @@ Dict_print(dict);
 To remove a key-value pair from the dictionary, use the `Dict_remove` function. This function takes a `key` as input and removes the associated value from the dictionary. Here goes its prototype:
 
 ```C
-void* Dict_remove(const char* key, Dict_t dict);
+void* Dict_remove(const char* key, Dict_t* dict);
 ```
 
 ##### Parameters
@@ -346,7 +346,7 @@ The `Dict_remove` function returns a pointer to the data associated with the rem
 ##### Example Usage
 
 ```C
-Dict_t dict = Dict_new(10, print_int, destroy_int, save_int, load_int);
+Dict_t* dict = Dict_new(10, print_int, destroy_int, save_int, load_int);
 
 /* Insert some integer values into the dictionary */
 
@@ -368,14 +368,14 @@ In this example, we remove a key-value pair from the dictionary using `Dict_remo
 To retrieve a value stored in the dictionary under a specified key, use the `Dict_lookup` function. This function allows you to find the data associated with a given key:
 
 ```C
-void* Dict_lookup(const char* key, Dict_t dict);
+void* Dict_lookup(const char* key, Dict_t* dict);
 ```
 
 ##### Parameters
 
 - `key` - A pointer to a string representing the unique key associated with the value you want to retrieve from the dictionary.
 
-- `dict` - A `Dict_t` structure representing the dictionary instance from which you want to look up the value.
+- `dict` - A pointer to the `Dict_t` structure representing the dictionary instance from which you want to look up the value.
 
 ##### Return Value
 
@@ -384,7 +384,7 @@ The `Dict_lookup` function returns a pointer to the data associated with the spe
 ##### Example Usage
 
 ```C
-Dict_t dict = Dict_new(10, print_int, destroy_int, save_int, load_int);
+Dict_t* dict = Dict_new(10, print_int, destroy_int, save_int, load_int);
 
 /* Insert some integer values into the dictionary */
 
@@ -403,7 +403,7 @@ if (value != NULL) {
 To safely remove a dictionary and free all associated memory, use the `Dict_destroy` function. This function will delete all elements from the dictionary by calling the user-defined destroy function for each element stored, and it will also free the memory allocated for the dictionary itself. The prototype is the following:
 
 ```C
-void Dict_destroy(Dict_t dict);
+void Dict_destroy(Dict_t* dict);
 ```
 
 ##### User-Defined `destroy` Function
@@ -423,12 +423,12 @@ When creating a dictionary using `Dict_new`, you must specify a destroy function
 To save the contents of a dictionary to a file, use the `Dict_save` function. This function writes the key-value pairs stored in the dictionary to a specified file in binary format.
 
 ```C
-int Dict_save(const Dict_t dict, const char* filename);
+int Dict_save(const Dict_t* dict, const char* filename);
 ```
 
 ###### Prameters
 
-- `dict` - A `Dict_t` structure representing the dictionary instance you want to save
+- `dict` - A pointer to the `Dict_t` structure representing the dictionary instance you want to save
 
 - `filename` - A string specifying the name of the file where the dictionary contents will be written
 
@@ -454,7 +454,7 @@ This function writes an integer value to the file using `fwrite`. It is importan
 To load a dictionary from a file, use the `Dict_load` function. This function reads the key-value pairs from a file and reconstructs the dictionary in memory.
 
 ```C
-Dict_t Dict_load(const char* filename, void (*print)(void* value), void (*destroy)(void* value), int (*save_data)(void* data, FILE* file), int (*load_data)(void** data, FILE* file));
+Dict_t* Dict_load(const char* filename, void (*print)(void* value), void (*destroy)(void* value), int (*save_data)(void* data, FILE* file), int (*load_data)(void** data, FILE* file));
 ```
 
 ###### Parameters
@@ -494,7 +494,7 @@ int how_to_read_INT(void** data, FILE* file) {
 ##### Example Usage
 
 ```C
-Dict_t dict = Dict_new(10, print_int, destroy_int, how_to_write_INT, how_to_load_INT);
+Dict_t* dict = Dict_new(10, print_int, destroy_int, how_to_write_INT, how_to_load_INT);
 
 /* Insert some integer values into the dictionary */
 
@@ -502,7 +502,7 @@ Dict_save(dict, "dictionary.bin");
 
 /* ... some time later ... */
 
-Dict_t loaded_dict = Dict_load("dictionary.bin", print_int, destroy_int, how_to_save_INT, how_to_load_INT);
+Dict_t* loaded_dict = Dict_load("dictionary.bin", print_int, destroy_int, how_to_save_INT, how_to_load_INT);
 ```
 
 In this example, we save the dictionary to a file named "dictionary.bin" using `Dict_save`. Later, we load the dictionary from the same file using `Dict_load`, specifying the appropriate user-defined functions for handling the data type (in this case, integers).
