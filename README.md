@@ -277,7 +277,7 @@ void Dict_print(const Dict_t* dict);
 
 ##### Parameters
 
-- `dict` - A `Dict_t` structure representing the dictionary instance whose contents you want to print
+- `dict` - A pointer to the `Dict_t` structure representing the dictionary instance whose contents you want to print
 
 ##### User-Defined `print` Function
 
@@ -335,7 +335,7 @@ void* Dict_remove(const char* key, Dict_t* dict);
 
 - `key` - A pointer to a string representing the unique key of the key-value pair you want to remove from the dictionary
 
-- `dict` - A `Dict_t` structure representing the dictionary instance from which you want to remove the value
+- `dict` - A pointer to the `Dict_t` structure representing the dictionary instance from which you want to remove the value
 
 ##### Return Value
 
