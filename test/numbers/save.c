@@ -16,7 +16,7 @@ int how_to_read_INT(void* data, FILE* file);
 
 int main(int argc, char** argv) {
     
-    Dict_t* d = Dict_new(5, NULL, NULL, how_to_write_INT, NULL);
+    CdD_Dict* d = Dict_new(5, NULL, NULL, how_to_write_INT, NULL);
     
     int n10 = 10;
     int n77 = 77;

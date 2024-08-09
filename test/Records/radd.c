@@ -17,7 +17,7 @@ int main(int argc, char** argv) {
     const char* optstr = ":";
 
     Record* r = NULL;
-    Dict_t* dict = NULL;
+    CdD_Dict* dict = NULL;
 
     struct stat b;
 

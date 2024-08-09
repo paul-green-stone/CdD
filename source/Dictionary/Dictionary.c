@@ -32,13 +32,13 @@ struct dictionary {
     struct mapping** mappings;
 };
 
-typedef struct dictionary Dict_t;
+typedef struct dictionary CdD_Dict;
 
 /* ================================================================ */
 
-Dict_t* Dict_new(size_t size, void (*print)(void* data), void (*destroy)(void* data), int (*save_data)(void* data, FILE* file), int (*load_data)(void** data, FILE* file)) {
+CdD_Dict* Dict_new(size_t size, void (*print)(void* data), void (*destroy)(void* data), int (*save_data)(void* data, FILE* file), int (*load_data)(void** data, FILE* file)) {
     
-    Dict_t* dict = NULL;
+    CdD_Dict* dict = NULL;
     
     /* ================ */
     
@@ -85,7 +85,7 @@ Dict_t* Dict_new(size_t size, void (*print)(void* data), void (*destroy)(void* d
 
 /* ================================================================ */
 
-void Dict_print(const Dict_t* dict) {
+void Dict_print(const CdD_Dict* dict) {
     
     if (dict == NULL) {
         return ;
@@ -105,7 +105,7 @@ void Dict_print(const Dict_t* dict) {
 
 /* ================================================================ */
 
-ssize_t Dict_insert(const char* key, void* value, Dict_t* dict) {
+ssize_t Dict_insert(const char* key, void* value, CdD_Dict* dict) {
     
     size_t index = 0;
     
@@ -118,21 +118,24 @@ ssize_t Dict_insert(const char* key, void* value, Dict_t* dict) {
     if (dict->size == dict->capacity) {
         return -1;
     }
+
+    /* Compute the hash value to determine the location in the table */
+    index = hash_pjw(key, dict->capacity);
     
     for (size_t i = 0; i < dict->capacity; i++) {
-        index = (hash_pjw(key, dict->capacity) + i * probe_hash(key, dict->capacity)) % dict->capacity;
+        size_t probe = (index + i * probe_hash(index, 7)) % dict->capacity;
         
-        if (IS_EMPTY(dict, index)) {
+        if (IS_EMPTY(dict, probe)) {
             
-            strncpy(dict->mappings[index]->key, key, MAX_TAG_LEN - 1);
-            dict->mappings[index]->value = value;
+            strncpy(dict->mappings[probe]->key, key, MAX_TAG_LEN - 1);
+            dict->mappings[probe]->value = value;
             
             dict->size++;
             
             /* ======== */
             break ;
         }
-        else if (strcmp(dict->mappings[index]->key, key) == 0) {
+        else if (strcmp(dict->mappings[probe]->key, key) == 0) {
             return -1;
         }
     }
@@ -144,7 +147,7 @@ ssize_t Dict_insert(const char* key, void* value, Dict_t* dict) {
 
 /* ================================================================ */
 
-ssize_t Dict_size(const Dict_t* dict) {
+ssize_t Dict_size(const CdD_Dict* dict) {
     
     if (dict == NULL) {
         return -1;
@@ -157,7 +160,7 @@ ssize_t Dict_size(const Dict_t* dict) {
 
 /* ================================================================ */
 
-ssize_t Dict_capacity(const Dict_t* dict) {
+ssize_t Dict_capacity(const CdD_Dict* dict) {
 
     if (dict == NULL) {
         return -1;
@@ -170,7 +173,7 @@ ssize_t Dict_capacity(const Dict_t* dict) {
 
 /* ================================================================ */
 
-void Dict_destroy(Dict_t* dict) {
+void Dict_destroy(CdD_Dict* dict) {
     
     if (dict == NULL) {
         return ;
@@ -191,7 +194,7 @@ void Dict_destroy(Dict_t* dict) {
 
 /* ================================================================ */
 
-float Dict_loadF(const Dict_t* dict) {
+float Dict_loadF(const CdD_Dict* dict) {
     
     if (dict == NULL || dict->capacity == 0) {
         return -1.f;
@@ -204,7 +207,7 @@ float Dict_loadF(const Dict_t* dict) {
 
 /* ================================================================ */
 
-void* Dict_lookup(const char* key, Dict_t* dict) {
+void* Dict_lookup(const char* key, CdD_Dict* dict) {
     
     size_t index = 0;
     
@@ -213,15 +216,18 @@ void* Dict_lookup(const char* key, Dict_t* dict) {
     if (dict == NULL) {
         return NULL;
     }
+
+    /* Compute the hash value to determine the location in the table */
+    index = hash_pjw(key, dict->capacity);
     
     for (size_t i = 0; i < dict->capacity; i++) {
-        index = (hash_pjw(key, dict->capacity) + i * probe_hash(key, dict->capacity)) % dict->capacity;
+        size_t probe = (index + i * probe_hash(index, 7)) % dict->capacity;
         
-        if (IS_EMPTY(dict, index)) {
+        if (IS_EMPTY(dict, probe)) {
             return NULL;
         }
-        else if (!IS_EMPTY(dict, index) && strcmp(key, dict->mappings[index]->key) == 0) {
-            return dict->mappings[index]->value;
+        else if (!IS_EMPTY(dict, probe) && strcmp(key, dict->mappings[probe]->key) == 0) {
+            return dict->mappings[probe]->value;
         }
     }
     
@@ -232,7 +238,7 @@ void* Dict_lookup(const char* key, Dict_t* dict) {
 
 /* ================================================================ */
 
-void* Dict_remove(const char* key, Dict_t* dict) {
+void* Dict_remove(const char* key, CdD_Dict* dict) {
     
     size_t index = 0;
     void* value = NULL;
@@ -242,19 +248,22 @@ void* Dict_remove(const char* key, Dict_t* dict) {
     if (dict == NULL || key == NULL) {
         return NULL;
     }
+
+    /* Compute the hash value to determine the location in the table */
+    index = hash_pjw(key, dict->capacity);
     
     for (size_t i = 0; i < dict->capacity; i++) {
-        index = (hash_pjw(key, dict->capacity) + i * probe_hash(key, dict->capacity)) % dict->capacity;
+        size_t probe = (index + i * probe_hash(index, 7)) % dict->capacity;
 
-        if (IS_EMPTY(dict, index)) {
+        if (IS_EMPTY(dict, probe)) {
             break ;
         }
-        else if (!IS_EMPTY(dict, index) && strcmp(key, dict->mappings[index]->key) == 0) {
+        else if (!IS_EMPTY(dict, probe) && strcmp(key, dict->mappings[probe]->key) == 0) {
             
-            memset(dict->mappings[index]->key, '\0', MAX_TAG_LEN);
+            memset(dict->mappings[probe]->key, '\0', MAX_TAG_LEN);
             
-            value = dict->mappings[index]->value;
-            dict->mappings[index]->value = NULL;
+            value = dict->mappings[probe]->value;
+            dict->mappings[probe]->value = NULL;
             
             dict->size--;
         }
@@ -267,7 +276,7 @@ void* Dict_remove(const char* key, Dict_t* dict) {
 
 /* ================================================================ */
 
-int Dict_save(const Dict_t* dict, const char* filename) {
+int Dict_save(const CdD_Dict* dict, const char* filename) {
 
     FILE* file;
 
@@ -334,9 +343,9 @@ int Dict_save(const Dict_t* dict, const char* filename) {
 
 /* ================================================================ */
 
-Dict_t* Dict_load(const char* filename, void (*print)(void* value), void (*destroy)(void* value), int (*save_data)(void* data, FILE* file), int (*load_data)(void** data, FILE* file)) {
+CdD_Dict* Dict_load(const char* filename, void (*print)(void* value), void (*destroy)(void* value), int (*save_data)(void* data, FILE* file), int (*load_data)(void** data, FILE* file)) {
 
-    Dict_t* dict = NULL;
+    CdD_Dict* dict = NULL;
     size_t size;
     size_t bytes_read = 0;
 

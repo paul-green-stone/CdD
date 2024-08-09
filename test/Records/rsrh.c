@@ -7,7 +7,7 @@
 
 int main(int argc, char** argv) {
 
-    Dict_t* dict = NULL;
+    CdD_Dict* dict = NULL;
 
     extern char *optarg;
     extern int optind, opterr, optopt;

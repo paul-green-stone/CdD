@@ -29,8 +29,8 @@ size_t hash_pjw(const char* key, size_t mod) {
 
 /* ================================================================ */
 
-size_t probe_hash(const char* key, size_t mod) {
-    return 1 + (strlen(key) % (mod - 1));
+size_t probe_hash(size_t hash_index, size_t prime) {
+    return prime - (hash_index % prime);
 }
 
 /* ================================================================ */
