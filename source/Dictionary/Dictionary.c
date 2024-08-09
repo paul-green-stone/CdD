@@ -16,9 +16,9 @@ struct mapping {
 struct dictionary {
     
     /* The capacity of the dictionary, representing the maximum number of elements it can hold */
-    size_t logical_size;
+    size_t capacity;
     /* The current number of key-value pairs stored in the dictionary */
-    size_t actual_size;
+    size_t size;
     
     /* How to output data stored in the dictionary */
     void (*print)(void* data);
@@ -71,7 +71,7 @@ Dict_t Dict_new(size_t size, void (*print)(void* data), void (*destroy)(void* da
         }
     }
     
-    dict->logical_size = size;
+    dict->capacity = size;
     
     dict->print = print;
     dict->destroy = destroy;
@@ -91,7 +91,7 @@ void Dict_print(const Dict_t dict) {
         return ;
     }
     
-    for (size_t i = 0; i < dict->logical_size; i++) {
+    for (size_t i = 0; i < dict->capacity; i++) {
         printf("%zu. ", i);
         
         if (!IS_EMPTY(dict, i)) {
@@ -116,19 +116,19 @@ ssize_t Dict_insert(const char* key, void* value, Dict_t dict) {
         return -1;
     }
     
-    if (dict->actual_size == dict->logical_size) {
+    if (dict->size == dict->capacity) {
         return -1;
     }
     
-    for (size_t i = 0; i < dict->logical_size; i++) {
-        index = (hash_pjw(key, dict->logical_size) + i * probe_hash(key, dict->logical_size)) % dict->logical_size;
+    for (size_t i = 0; i < dict->capacity; i++) {
+        index = (hash_pjw(key, dict->capacity) + i * probe_hash(key, dict->capacity)) % dict->capacity;
         
         if (IS_EMPTY(dict, index)) {
             
             strncpy(dict->mappings[index]->key, key, MAX_TAG_LEN - 1);
             dict->mappings[index]->value = value;
             
-            dict->actual_size++;
+            dict->size++;
             
             /* ======== */
             break ;
@@ -153,7 +153,7 @@ ssize_t Dict_size(const Dict_t dict) {
     
     /* ======== */
     
-    return dict->actual_size;
+    return dict->size;
 }
 
 /* ================================================================ */
@@ -166,7 +166,7 @@ ssize_t Dict_capacity(const Dict_t dict) {
     
     /* ======== */
     
-    return dict->logical_size;
+    return dict->capacity;
 }
 
 /* ================================================================ */
@@ -177,7 +177,7 @@ void Dict_destroy(Dict_t dict) {
         return ;
     }
 
-    for (size_t i = 0; i < dict->logical_size; i++) {
+    for (size_t i = 0; i < dict->capacity; i++) {
 
         if (dict->destroy) {
             dict->destroy(dict->mappings[i]->value);
@@ -194,13 +194,13 @@ void Dict_destroy(Dict_t dict) {
 
 float Dict_loadF(const Dict_t dict) {
     
-    if (dict == NULL || dict->logical_size == 0) {
+    if (dict == NULL || dict->capacity == 0) {
         return -1.f;
     }
     
     /* ======== */
     
-    return ((float) dict->actual_size / dict->logical_size);
+    return ((float) dict->size / dict->capacity);
 }
 
 /* ================================================================ */
@@ -215,8 +215,8 @@ void* Dict_lookup(const char* key, Dict_t dict) {
         return NULL;
     }
     
-    for (size_t i = 0; i < dict->logical_size; i++) {
-        index = (hash_pjw(key, dict->logical_size) + i * probe_hash(key, dict->logical_size)) % dict->logical_size;
+    for (size_t i = 0; i < dict->capacity; i++) {
+        index = (hash_pjw(key, dict->capacity) + i * probe_hash(key, dict->capacity)) % dict->capacity;
         
         if (IS_EMPTY(dict, index)) {
             return NULL;
@@ -244,8 +244,8 @@ void* Dict_remove(const char* key, Dict_t dict) {
         return NULL;
     }
     
-    for (size_t i = 0; i < dict->logical_size; i++) {
-        index = (hash_pjw(key, dict->logical_size) + i * probe_hash(key, dict->logical_size)) % dict->logical_size;
+    for (size_t i = 0; i < dict->capacity; i++) {
+        index = (hash_pjw(key, dict->capacity) + i * probe_hash(key, dict->capacity)) % dict->capacity;
 
         if (IS_EMPTY(dict, index)) {
             break ;
@@ -257,7 +257,7 @@ void* Dict_remove(const char* key, Dict_t dict) {
             value = dict->mappings[index]->value;
             dict->mappings[index]->value = NULL;
             
-            dict->actual_size--;
+            dict->size--;
         }
     }
 
@@ -294,14 +294,14 @@ int Dict_save(const Dict_t dict, const char* filename) {
         return -1;
     }
 
-    if (fwrite(&dict->logical_size, sizeof(dict->logical_size), 1, file) != 1) {
+    if (fwrite(&dict->capacity, sizeof(dict->capacity), 1, file) != 1) {
         fprintf(stderr, "[%s] Error: an unexpected number of bytes was written for the dictionary size\n", __func__);
 
         /* ======== */
         return -1;
     }
 
-    for (size_t i = 0; i < dict->logical_size; i++) {
+    for (size_t i = 0; i < dict->capacity; i++) {
         if (!IS_EMPTY(dict, i)) {
 
             size_t key_len = strlen(dict->mappings[i]->key);
