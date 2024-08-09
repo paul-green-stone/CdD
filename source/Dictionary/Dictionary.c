@@ -32,13 +32,13 @@ struct dictionary {
     struct mapping** mappings;
 };
 
-typedef struct dictionary* Dict_t;
+typedef struct dictionary Dict_t;
 
 /* ================================================================ */
 
-Dict_t Dict_new(size_t size, void (*print)(void* data), void (*destroy)(void* data), int (*save_data)(void* data, FILE* file), int (*load_data)(void** data, FILE* file)) {
+Dict_t* Dict_new(size_t size, void (*print)(void* data), void (*destroy)(void* data), int (*save_data)(void* data, FILE* file), int (*load_data)(void** data, FILE* file)) {
     
-    Dict_t dict = NULL;
+    Dict_t* dict = NULL;
     
     /* ================ */
     
@@ -85,7 +85,7 @@ Dict_t Dict_new(size_t size, void (*print)(void* data), void (*destroy)(void* da
 
 /* ================================================================ */
 
-void Dict_print(const Dict_t dict) {
+void Dict_print(const Dict_t* dict) {
     
     if (dict == NULL) {
         return ;
@@ -95,7 +95,6 @@ void Dict_print(const Dict_t dict) {
         printf("%zu. ", i);
         
         if (!IS_EMPTY(dict, i)) {
-            // dict->mappings[i]->value != NULL
             printf("%s -> ", dict->mappings[i]->key);
             dict->print(dict->mappings[i]->value);
         }
@@ -106,7 +105,7 @@ void Dict_print(const Dict_t dict) {
 
 /* ================================================================ */
 
-ssize_t Dict_insert(const char* key, void* value, Dict_t dict) {
+ssize_t Dict_insert(const char* key, void* value, Dict_t* dict) {
     
     size_t index = 0;
     
@@ -145,7 +144,7 @@ ssize_t Dict_insert(const char* key, void* value, Dict_t dict) {
 
 /* ================================================================ */
 
-ssize_t Dict_size(const Dict_t dict) {
+ssize_t Dict_size(const Dict_t* dict) {
     
     if (dict == NULL) {
         return -1;
@@ -158,7 +157,7 @@ ssize_t Dict_size(const Dict_t dict) {
 
 /* ================================================================ */
 
-ssize_t Dict_capacity(const Dict_t dict) {
+ssize_t Dict_capacity(const Dict_t* dict) {
 
     if (dict == NULL) {
         return -1;
@@ -171,7 +170,7 @@ ssize_t Dict_capacity(const Dict_t dict) {
 
 /* ================================================================ */
 
-void Dict_destroy(Dict_t dict) {
+void Dict_destroy(Dict_t* dict) {
     
     if (dict == NULL) {
         return ;
@@ -192,7 +191,7 @@ void Dict_destroy(Dict_t dict) {
 
 /* ================================================================ */
 
-float Dict_loadF(const Dict_t dict) {
+float Dict_loadF(const Dict_t* dict) {
     
     if (dict == NULL || dict->capacity == 0) {
         return -1.f;
@@ -205,7 +204,7 @@ float Dict_loadF(const Dict_t dict) {
 
 /* ================================================================ */
 
-void* Dict_lookup(const char* key, Dict_t dict) {
+void* Dict_lookup(const char* key, Dict_t* dict) {
     
     size_t index = 0;
     
@@ -233,7 +232,7 @@ void* Dict_lookup(const char* key, Dict_t dict) {
 
 /* ================================================================ */
 
-void* Dict_remove(const char* key, Dict_t dict) {
+void* Dict_remove(const char* key, Dict_t* dict) {
     
     size_t index = 0;
     void* value = NULL;
@@ -268,7 +267,7 @@ void* Dict_remove(const char* key, Dict_t dict) {
 
 /* ================================================================ */
 
-int Dict_save(const Dict_t dict, const char* filename) {
+int Dict_save(const Dict_t* dict, const char* filename) {
 
     FILE* file;
 
@@ -335,9 +334,9 @@ int Dict_save(const Dict_t dict, const char* filename) {
 
 /* ================================================================ */
 
-Dict_t Dict_load(const char* filename, void (*print)(void* value), void (*destroy)(void* value), int (*save_data)(void* data, FILE* file), int (*load_data)(void** data, FILE* file)) {
+Dict_t* Dict_load(const char* filename, void (*print)(void* value), void (*destroy)(void* value), int (*save_data)(void* data, FILE* file), int (*load_data)(void** data, FILE* file)) {
 
-    Dict_t dict = NULL;
+    Dict_t* dict = NULL;
     size_t size;
     size_t bytes_read = 0;
 

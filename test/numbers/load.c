@@ -15,7 +15,7 @@ int how_to_read_INT(void** data, FILE* file);
 
 int main(int argc, char** argv) {
     
-    Dict_t d = Dict_load(FILENAME, how_to_print_INT, free, NULL, how_to_read_INT);
+    Dict_t* d = Dict_load(FILENAME, how_to_print_INT, free, NULL, how_to_read_INT);
     
     /* ================ */
     

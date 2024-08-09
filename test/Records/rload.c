@@ -6,7 +6,7 @@
 
 int main(int argc, char** argv) {
 
-    Dict_t dict = NULL;
+    Dict_t* dict = NULL;
 
     /* ================ */
 
